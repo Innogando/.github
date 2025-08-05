@@ -194,7 +194,6 @@ Big Data
 |-------------------|---------------------|---------------|
 | [`github-workflows`](https://github.com/Innogando/github-workflows) | Reusable CI/CD Actions | `YAML` `DevOps` |
 | [`ubxlib`](https://github.com/Innogando/ubxlib) | Libraries for u-blox products | `C` `Embedded` |
-| [`esxp1302`](https://github.com/Innogando/esxp1302) | ESP32 LoRa Gateway | `C` `IoT` |
 
 </div>
 
