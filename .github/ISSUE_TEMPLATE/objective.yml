@@ -1,0 +1,117 @@
+name: Objective
+description: Planned initiative, feature, or deliverable aligned with the engineering project (Granja de Rus).
+title: "[OBJECTIVE] "
+labels:
+  - objective
+type: Objective
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for **planned work** (not operational incidents before triage). After creating the issue, add it to the [engineering project](https://github.com/orgs/Innogando/projects/9) and set **Status**, **Priority**, **Area**, **Size**, and **Assignee** on the board. Values you select below must match the Project (see `PROJECT_SYNC.md` in this folder).
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area (Project · Area)
+      description: Must match the board option exactly.
+      options:
+        - CoWtrol
+        - Rumi
+        - Data
+        - Infra
+        - Cross / Platform
+        - Hardware
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Suggested priority (Project · Priority)
+      description: P0 urgent; P1 important; P2 nice to have.
+      options:
+        - P2
+        - P1
+        - P0
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: Estimated size (Project · Size)
+      options:
+        - XS
+        - S
+        - M
+        - L
+        - XL
+    validations:
+      required: true
+
+  - type: dropdown
+    id: suggested_status
+    attributes:
+      label: Suggested initial status (Project · Status)
+      description: New work usually starts in Backlog until refinement.
+      options:
+        - Backlog
+        - Ready
+        - In Progress
+        - Blocked
+        - Done
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Business or technical problem, opportunity, background.
+      placeholder: "What is happening and why does it matter now?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: success
+    attributes:
+      label: Goal and success criteria
+      description: What must be true when done (measurable if possible).
+      placeholder: "e.g. metric, verifiable behaviour, acceptance checklist..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope_in
+    attributes:
+      label: Scope (in)
+      description: What is included in this piece of work.
+    validations:
+      required: false
+
+  - type: textarea
+    id: scope_out
+    attributes:
+      label: Out of scope
+      description: What this issue explicitly does not cover.
+    validations:
+      required: false
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and dependencies
+      description: Possible blockers, external teams, pending decisions.
+    validations:
+      required: false
+
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: Design, ADR, documentation, related issues.
+    validations:
+      required: false

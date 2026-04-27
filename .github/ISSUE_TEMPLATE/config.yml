@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Engineering project (Granja de Rus)
+    url: https://github.com/orgs/Innogando/projects/9
+    about: Single source of truth for work — status, priority, area, and assignment.
+  - name: Innogando website
+    url: https://innogando.com
+    about: Public product information; replace or extend with your internal wiki if you have one.
