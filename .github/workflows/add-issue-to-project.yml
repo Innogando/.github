@@ -68,3 +68,39 @@ jobs:
               }) { projectV2Item { id } }
             }
           ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
+
+      - name: Ensure Issue Type (default Task, support/censo labels override; skip if already set)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
+        run: |
+          set -euo pipefail
+
+          current=$(gh api graphql -f query='
+            query($issue:ID!) {
+              node(id:$issue) { ... on Issue { issueType { name } } }
+            }
+          ' -f issue="$ISSUE_NODE_ID" | jq -r '.data.node.issueType.name // empty')
+
+          if [ -n "$current" ]; then
+            echo "Issue already has type '$current' (set by template or user). Skipping."
+            exit 0
+          fi
+
+          labels=$(echo "$LABELS_JSON" | jq -r '.[]')
+          if echo "$labels" | grep -qx "censo"; then
+            TYPE_ID="IT_kwDOCA2kqc4B-ccB"  # Censo
+          elif echo "$labels" | grep -qx "support"; then
+            TYPE_ID="IT_kwDOCA2kqc4B-AWn"  # Support
+          else
+            TYPE_ID="IT_kwDOCA2kqc4BK9Nl"  # Task (default)
+          fi
+
+          gh api graphql -f query='
+            mutation($issue:ID!,$type:ID!) {
+              updateIssueIssueType(input:{ issueId:$issue, issueTypeId:$type }) {
+                issue { id issueType { name } }
+              }
+            }
+          ' -f issue="$ISSUE_NODE_ID" -f type="$TYPE_ID"
