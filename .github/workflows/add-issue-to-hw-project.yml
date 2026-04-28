@@ -1,0 +1,71 @@
+name: Add issue to Granja de Hardware project
+
+on:
+  workflow_call:
+    secrets:
+      GH_PROJECTS_PAT:
+        required: true
+
+jobs:
+  add-and-set-area:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to project
+        id: add
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/orgs/Innogando/projects/11
+          github-token: ${{ secrets.GH_PROJECTS_PAT }}
+
+      - name: Resolve Area option id from repo name
+        id: area
+        env:
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          case "$REPO" in
+            rumi|rumi-bull|rumi-hw|pedometer|rumi-dairy-hw|porci|lorawan-devices) OPT="8f3c6346" ;;  # Rumi
+            corni)                                                                OPT="033f7249" ;;  # Corni
+            rumi-firmware|rumi-craft)                                             OPT="d7e1d101" ;;  # Firmware
+            innolaser)                                                            OPT="4146cb6e" ;;  # Taller
+            *)                                                                    OPT="" ;;          # sin mapping -> no tocar Area
+          esac
+          echo "option_id=$OPT" >> "$GITHUB_OUTPUT"
+
+      - name: Set Area field
+        if: steps.area.outputs.option_id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+          PROJECT_ID: PVT_kwDOCA2kqc4BV4Gu
+          FIELD_ID: PVTSSF_lADOCA2kqc4BV4GuzhRQrT8
+          ITEM_ID: ${{ steps.add.outputs.itemId }}
+          OPTION_ID: ${{ steps.area.outputs.option_id }}
+        run: |
+          gh api graphql -f query='
+            mutation($project:ID!,$item:ID!,$field:ID!,$opt:String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId:    $item
+                fieldId:   $field
+                value:     { singleSelectOptionId: $opt }
+              }) { projectV2Item { id } }
+            }
+          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
+
+      - name: Set Priority field (default P1)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+          PROJECT_ID: PVT_kwDOCA2kqc4BV4Gu
+          FIELD_ID: PVTSSF_lADOCA2kqc4BV4GuzhRQrTs
+          ITEM_ID: ${{ steps.add.outputs.itemId }}
+          OPTION_ID: 7cf0f370
+        run: |
+          gh api graphql -f query='
+            mutation($project:ID!,$item:ID!,$field:ID!,$opt:String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId:    $item
+                fieldId:   $field
+                value:     { singleSelectOptionId: $opt }
+              }) { projectV2Item { id } }
+            }
+          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
