@@ -1,0 +1,51 @@
+name: Add issue to Granja de Rus project
+
+on:
+  workflow_call:
+    secrets:
+      GH_PROJECTS_PAT:
+        required: true
+
+jobs:
+  add-and-set-area:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to project
+        id: add
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/orgs/Innogando/projects/9
+          github-token: ${{ secrets.GH_PROJECTS_PAT }}
+
+      - name: Resolve Area option id from repo name
+        id: area
+        env:
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          case "$REPO" in
+            airflow)                 OPT="033f7249" ;;   # Data
+            cowtrol|cowtrol-api)     OPT="8f3c6346" ;;   # CoWtrol
+            rumi-api|rumi-app)       OPT="bbc23f7e" ;;   # Rumi
+            k8s-infra)               OPT="3ca30339" ;;   # Infra
+            *)                       OPT="86907580" ;;   # Cross / Platform (incl. management)
+          esac
+          echo "option_id=$OPT" >> "$GITHUB_OUTPUT"
+
+      - name: Set Area field
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+          PROJECT_ID: PVT_kwDOCA2kqc4BUnfM
+          FIELD_ID: PVTSSF_lADOCA2kqc4BUnfMzhQ1c-M
+          ITEM_ID: ${{ steps.add.outputs.itemId }}
+          OPTION_ID: ${{ steps.area.outputs.option_id }}
+        run: |
+          gh api graphql -f query='
+            mutation($project:ID!,$item:ID!,$field:ID!,$opt:String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId:    $item
+                fieldId:   $field
+                value:     { singleSelectOptionId: $opt }
+              }) { projectV2Item { id } }
+            }
+          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
