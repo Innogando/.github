@@ -49,3 +49,22 @@ jobs:
               }) { projectV2Item { id } }
             }
           ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
+
+      - name: Set Priority field (default P1)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+          PROJECT_ID: PVT_kwDOCA2kqc4BUnfM
+          FIELD_ID: PVTSSF_lADOCA2kqc4BUnfMzhBuedQ
+          ITEM_ID: ${{ steps.add.outputs.itemId }}
+          OPTION_ID: 7cf0f370
+        run: |
+          gh api graphql -f query='
+            mutation($project:ID!,$item:ID!,$field:ID!,$opt:String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId:    $item
+                fieldId:   $field
+                value:     { singleSelectOptionId: $opt }
+              }) { projectV2Item { id } }
+            }
+          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
