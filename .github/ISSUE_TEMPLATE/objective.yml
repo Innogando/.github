@@ -1,117 +1,45 @@
 name: Objective
-description: Planned initiative, feature, or deliverable aligned with the engineering project (Granja de Rus).
+description: Quarterly objective for the team. Keep it outcome-driven, not task-driven.
 title: "[OBJECTIVE] "
-labels:
-  - objective
+labels: [objective]
 type: Objective
 body:
   - type: markdown
     attributes:
       value: |
-        Use this template for **planned work** (not operational incidents before triage). After creating the issue, add it to the [engineering project](https://github.com/orgs/Innogando/projects/9) and set **Status**, **Priority**, **Area**, **Size**, and **Assignee** on the board. Values you select below must match the Project (see `PROJECT_SYNC.md` in this folder).
+        Use this template for **quarterly objectives**. One objective = one outcome you commit to by end of quarter.
 
-  - type: dropdown
-    id: area
-    attributes:
-      label: Area (Project · Area)
-      description: Must match the board option exactly.
-      options:
-        - CoWtrol
-        - Rumi
-        - Data
-        - Infra
-        - Cross / Platform
-        - Hardware
-    validations:
-      required: true
+        Before submitting:
+        - Assign the quarterly **Milestone** (e.g. `2026 Q2 (Apr-Jun)`). Create it in this repo if it doesn't exist.
+        - Area, Priority and Status are set automatically on the board; no need to repeat them here.
+        - Break the objective into child issues/PRs during refinement. This issue stays as the north star.
 
-  - type: dropdown
-    id: priority
+  - type: textarea
+    id: why
     attributes:
-      label: Suggested priority (Project · Priority)
-      description: P0 urgent; P1 important; P2 nice to have.
-      options:
-        - P2
-        - P1
-        - P0
-      default: 0
-    validations:
-      required: true
-
-  - type: dropdown
-    id: size
-    attributes:
-      label: Estimated size (Project · Size)
-      options:
-        - XS
-        - S
-        - M
-        - L
-        - XL
-    validations:
-      required: true
-
-  - type: dropdown
-    id: suggested_status
-    attributes:
-      label: Suggested initial status (Project · Status)
-      description: New work usually starts in Backlog until refinement.
-      options:
-        - Backlog
-        - Ready
-        - In Progress
-        - Blocked
-        - Done
-      default: 0
+      label: Why now
+      description: Problem, opportunity or strategic bet behind this objective. 2-4 lines.
+      placeholder: "What happens if we don't do this? What do we unlock if we do?"
     validations:
       required: true
 
   - type: textarea
-    id: context
+    id: goal
     attributes:
-      label: Context
-      description: Business or technical problem, opportunity, background.
-      placeholder: "What is happening and why does it matter now?"
+      label: Goal
+      description: Outcome in one sentence. Starts with a verb. No implementation detail.
+      placeholder: "Reduce mean time to detect collar failures from 7d to <1d."
     validations:
       required: true
 
   - type: textarea
     id: success
     attributes:
-      label: Goal and success criteria
-      description: What must be true when done (measurable if possible).
-      placeholder: "e.g. metric, verifiable behaviour, acceptance checklist..."
+      label: Success criteria
+      description: Concrete, verifiable checks. Binary or numeric.
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
     validations:
       required: true
-
-  - type: textarea
-    id: scope_in
-    attributes:
-      label: Scope (in)
-      description: What is included in this piece of work.
-    validations:
-      required: false
-
-  - type: textarea
-    id: scope_out
-    attributes:
-      label: Out of scope
-      description: What this issue explicitly does not cover.
-    validations:
-      required: false
-
-  - type: textarea
-    id: risks
-    attributes:
-      label: Risks and dependencies
-      description: Possible blockers, external teams, pending decisions.
-    validations:
-      required: false
-
-  - type: textarea
-    id: links
-    attributes:
-      label: Links
-      description: Design, ADR, documentation, related issues.
-    validations:
-      required: false
