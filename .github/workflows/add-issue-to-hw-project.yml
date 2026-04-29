@@ -17,18 +17,25 @@ jobs:
           project-url: https://github.com/orgs/Innogando/projects/11
           github-token: ${{ secrets.GH_PROJECTS_PAT }}
 
-      - name: Resolve Area option id from repo name
+      - name: Resolve Area option id (rumi pro label overrides repo mapping)
         id: area
         env:
           REPO: ${{ github.event.repository.name }}
+          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
         run: |
-          case "$REPO" in
-            rumi|rumi-bull|rumi-hw|pedometer|rumi-dairy-hw|porci|lorawan-devices) OPT="8f3c6346" ;;  # Rumi
-            corni)                                                                OPT="033f7249" ;;  # Corni
-            rumi-firmware|rumi-craft)                                             OPT="d7e1d101" ;;  # Firmware
-            innolaser)                                                            OPT="4146cb6e" ;;  # Taller
-            *)                                                                    OPT="" ;;          # sin mapping -> no tocar Area
-          esac
+          set -euo pipefail
+          labels=$(echo "$LABELS_JSON" | jq -r '.[]')
+          if echo "$labels" | grep -Fqx 'rumi pro'; then
+            OPT="bbc23f7e"   # Rumi PRO (label override — any repo)
+          else
+            case "$REPO" in
+              rumi|rumi-bull|rumi-hw|pedometer|rumi-dairy-hw|porci|lorawan-devices) OPT="8f3c6346" ;;  # Rumi
+              corni)                                                                OPT="033f7249" ;;  # Corni
+              rumi-firmware|rumi-craft)                                             OPT="d7e1d101" ;;  # Firmware
+              innolaser)                                                            OPT="4146cb6e" ;;  # Taller
+              *)                                                                    OPT="" ;;          # sin mapping -> no tocar Area
+            esac
+          fi
           echo "option_id=$OPT" >> "$GITHUB_OUTPUT"
 
       - name: Set Area field
