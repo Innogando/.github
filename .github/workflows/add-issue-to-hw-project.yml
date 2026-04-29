@@ -29,7 +29,9 @@ jobs:
             OPT="bbc23f7e"   # Rumi PRO (label override — any repo)
           else
             case "$REPO" in
-              rumi|rumi-bull|rumi-hw|pedometer|rumi-dairy-hw|porci|lorawan-devices) OPT="8f3c6346" ;;  # Rumi
+              rumi-dairy-hw)                                                         OPT="9ee08c7f" ;;  # Rumi Dairy
+              porci)                                                                OPT="85a71fc3" ;;  # Porci
+              rumi|rumi-bull|rumi-hw|pedometer|lorawan-devices)                     OPT="8f3c6346" ;;  # Rumi
               corni)                                                                OPT="033f7249" ;;  # Corni
               rumi-firmware|rumi-craft)                                             OPT="d7e1d101" ;;  # Firmware
               innolaser)                                                            OPT="4146cb6e" ;;  # Taller

@@ -26,7 +26,7 @@ Issue forms populate the **issue body** and set the GitHub **Issue type** (**Obj
 
 **Area (software project #9):** CoWtrol, Rumi, Data, Infra, Cross / Platform, Hardware
 
-**Area (hardware project #11):** Rumi, Corni, Firmware, Taller
+**Area (hardware project #11):** Rumi, Rumi PRO, Rumi Dairy, Corni, Firmware, Taller, Porci — repo mappings are applied by [add-issue-to-hw-project.yml](../workflows/add-issue-to-hw-project.yml).
 
 ## Issue types and labels
 
