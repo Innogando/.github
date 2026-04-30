@@ -1,0 +1,105 @@
+name: Project dates from status
+
+on:
+  projects_v2_item:
+    types: [edited]
+
+concurrency:
+  group: project-dates-${{ github.event.projects_v2_item.node_id }}
+  cancel-in-progress: false
+
+env:
+  ORG_LOGIN: Innogando
+  STATUS_IN_PROGRESS: In Progress
+  STATUS_DONE: Done
+  PROJECT_CONFIGS: >-
+    [{"number":9,"projectId":"PVT_kwDOCA2kqc4BUnfM","statusFieldId":"PVTSSF_lADOCA2kqc4BUnfMzhBucOc","startDateFieldId":"PVTF_lADOCA2kqc4BUnfMzhBuedg","endDateFieldId":"PVTF_lADOCA2kqc4BUnfMzhRbXSE"},{"number":11,"projectId":"PVT_kwDOCA2kqc4BV4Gu","statusFieldId":"PVTSSF_lADOCA2kqc4BV4GuzhRQrS8","startDateFieldId":"PVTF_lADOCA2kqc4BV4GuzhRQrT0","endDateFieldId":"PVTF_lADOCA2kqc4BV4GuzhRlSCM"}]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_PROJECTS_PAT }}
+          script: |
+            const core = require('@actions/core');
+            const ORG_LOGIN = process.env.ORG_LOGIN;
+            const STATUS_IN_PROGRESS = process.env.STATUS_IN_PROGRESS;
+            const STATUS_DONE = process.env.STATUS_DONE;
+            const configs = JSON.parse(process.env.PROJECT_CONFIGS);
+
+            const payload = context.payload;
+            if (payload.action !== 'edited') return;
+
+            if (payload.organization?.login && payload.organization.login !== ORG_LOGIN) {
+              core.info(`skip: org ${payload.organization.login}`);
+              return;
+            }
+
+            const fv = payload.changes?.field_value;
+            if (!fv || fv.field_type !== 'single_select' || fv.field_name !== 'Status') return;
+
+            const num = Number(fv.project_number);
+            const cfg = configs.find((c) => c.number === num);
+            if (!cfg) return;
+            if (fv.field_node_id !== cfg.statusFieldId) return;
+
+            const itemId = payload.projects_v2_item.node_id;
+            const toName = fv.to?.name;
+            const today = new Date().toISOString().slice(0, 10);
+            const projectId = cfg.projectId;
+
+            async function getDate(fieldId) {
+              const { node } = await github.graphql(
+                `query ($itemId: ID!) {
+                  node(id: $itemId) {
+                    ... on ProjectV2Item {
+                      fieldValues(first: 40) {
+                        nodes {
+                          ... on ProjectV2ItemFieldDateValue {
+                            date
+                            field { ... on ProjectV2FieldCommon { id } }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }`,
+                { itemId }
+              );
+              const nodes = node?.fieldValues?.nodes ?? [];
+              return nodes.find((n) => n.field?.id === fieldId)?.date ?? null;
+            }
+
+            async function setDate(fieldId, value) {
+              await github.graphql(
+                `mutation ($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: Date!) {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { date: $value }
+                    }
+                  ) { projectV2Item { id } }
+                }`,
+                { projectId, itemId, fieldId, value }
+              );
+            }
+
+            if (toName === STATUS_IN_PROGRESS) {
+              if (await getDate(cfg.startDateFieldId)) return;
+              await setDate(cfg.startDateFieldId, today);
+              core.info(`project=${num} start_date=${today}`);
+              return;
+            }
+
+            if (toName === STATUS_DONE) {
+              if (await getDate(cfg.endDateFieldId)) return;
+              await setDate(cfg.endDateFieldId, today);
+              core.info(`project=${num} end_date=${today}`);
+              return;
+            }
+
+            core.info(`skip: status=${toName}`);
