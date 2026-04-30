@@ -17,18 +17,38 @@ jobs:
           project-url: https://github.com/orgs/Innogando/projects/9
           github-token: ${{ secrets.GH_PROJECTS_PAT }}
 
-      - name: Resolve Area option id from repo name
+      - name: Resolve Area option id (labels override repo mapping)
         id: area
         env:
           REPO: ${{ github.event.repository.name }}
+          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
         run: |
-          case "$REPO" in
-            airflow)                 OPT="033f7249" ;;   # Data
-            cowtrol|cowtrol-api)     OPT="8f3c6346" ;;   # CoWtrol
-            rumi-api|rumi-app)       OPT="bbc23f7e" ;;   # Rumi
-            k8s-infra)               OPT="3ca30339" ;;   # Infra
-            *)                       OPT="86907580" ;;   # Cross / Platform (incl. management)
-          esac
+          set -euo pipefail
+          labels=$(echo "$LABELS_JSON" | jq -r '.[]')
+
+          OPT=""
+          # Granja de Rus Área IDs — primera coincidencia gana si hay varias etiquetas de área
+          if echo "$labels" | grep -Fqx 'cowtrol'; then
+            OPT="8f3c6346"   # CoWtrol
+          elif echo "$labels" | grep -Fqx 'cross / platform'; then
+            OPT="86907580"   # Cross / Platform
+          elif echo "$labels" | grep -Fqx 'data'; then
+            OPT="033f7249"   # Data
+          elif echo "$labels" | grep -Fqx 'infra'; then
+            OPT="3ca30339"   # Infra
+          elif echo "$labels" | grep -Fqx 'rumi'; then
+            OPT="bbc23f7e"   # Rumi
+          fi
+
+          if [ -z "$OPT" ]; then
+            case "$REPO" in
+              airflow)                 OPT="033f7249" ;;   # Data
+              cowtrol|cowtrol-api)     OPT="8f3c6346" ;;   # CoWtrol
+              rumi-api|rumi-app)       OPT="bbc23f7e" ;;   # Rumi
+              k8s-infra)               OPT="3ca30339" ;;   # Infra
+              *)                       OPT="86907580" ;;   # Cross / Platform (incl. management)
+            esac
+          fi
           echo "option_id=$OPT" >> "$GITHUB_OUTPUT"
 
       - name: Set Area field

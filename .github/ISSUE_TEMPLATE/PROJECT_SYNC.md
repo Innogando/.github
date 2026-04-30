@@ -9,7 +9,7 @@ Issue forms populate the **issue body** and set the GitHub **Issue type** (**Obj
 | Title | Text | Issue title (edit when creating) |
 | Status | Single select | Board: Backlog → Ready → In Progress → Blocked → Done. **Set by workflow / board; do not duplicate in body.** |
 | Priority | Single select | Board: P0, P1, P2. **Set by workflow (default P1); do not duplicate in body.** |
-| Area | Single select | Board. **Set by workflow based on repo name; do not duplicate in body.** |
+| Area | Single select | Board. **Set by workflow:** area labels override repo mapping — see [add-issue-to-project.yml](../workflows/add-issue-to-project.yml). |
 | Size | Single select | Board: XS, S, M, L, XL (only useful for tasks, not for quarterly objectives) |
 | Milestone | Milestone | Issue sidebar. Quarterly convention (see below). |
 | Assignees | People | Board or issue |
@@ -24,7 +24,7 @@ Issue forms populate the **issue body** and set the GitHub **Issue type** (**Obj
 
 **Size:** XS, S, M, L, XL
 
-**Area (software project #9):** CoWtrol, Rumi, Data, Infra, Cross / Platform, Hardware
+**Area (software project #9):** CoWtrol, Rumi, Data, Infra, Cross / Platform. Optional GitHub labels (_exact name_) override the repo default: `cowtrol`, `cross / platform`, `data`, `infra`, `rumi`. If several are present, precedence is that order. Then repo-based defaults (e.g. `airflow` → Data, …) — see [add-issue-to-project.yml](../workflows/add-issue-to-project.yml).
 
 **Area (hardware project #11):** Rumi, Rumi PRO, Rumi Dairy, Corni, Firmware, Taller, Porci — repo mappings are applied by [add-issue-to-hw-project.yml](../workflows/add-issue-to-hw-project.yml).
 
