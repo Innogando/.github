@@ -1,19 +1,9 @@
 name: Project dates from status
 
 on:
-  projects_v2_item:
-    types: [edited]
-
-concurrency:
-  group: project-dates-${{ github.event.projects_v2_item.node_id }}
-  cancel-in-progress: false
-
-env:
-  ORG_LOGIN: Innogando
-  STATUS_IN_PROGRESS: In Progress
-  STATUS_DONE: Done
-  PROJECT_CONFIGS: >-
-    [{"number":9,"projectId":"PVT_kwDOCA2kqc4BUnfM","statusFieldId":"PVTSSF_lADOCA2kqc4BUnfMzhBucOc","startDateFieldId":"PVTF_lADOCA2kqc4BUnfMzhBuedg","endDateFieldId":"PVTF_lADOCA2kqc4BUnfMzhRbXSE"},{"number":11,"projectId":"PVT_kwDOCA2kqc4BV4Gu","statusFieldId":"PVTSSF_lADOCA2kqc4BV4GuzhRQrS8","startDateFieldId":"PVTF_lADOCA2kqc4BV4GuzhRQrT0","endDateFieldId":"PVTF_lADOCA2kqc4BV4GuzhRlSCM"}]
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch: {}
 
 jobs:
   sync:
@@ -23,56 +13,70 @@ jobs:
         with:
           github-token: ${{ secrets.GH_PROJECTS_PAT }}
           script: |
-            const core = require('@actions/core');
-            const ORG_LOGIN = process.env.ORG_LOGIN;
-            const STATUS_IN_PROGRESS = process.env.STATUS_IN_PROGRESS;
-            const STATUS_DONE = process.env.STATUS_DONE;
-            const configs = JSON.parse(process.env.PROJECT_CONFIGS);
+            const STATUS_IN_PROGRESS = 'In Progress';
+            const STATUS_DONE = 'Done';
 
-            const payload = context.payload;
-            if (payload.action !== 'edited') return;
+            const PROJECTS = [
+              {
+                number: 9,
+                projectId: 'PVT_kwDOCA2kqc4BUnfM',
+                statusFieldId: 'PVTSSF_lADOCA2kqc4BUnfMzhBucOc',
+                startDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhBuedg',
+                endDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhRbXSE',
+              },
+              {
+                number: 11,
+                projectId: 'PVT_kwDOCA2kqc4BV4Gu',
+                statusFieldId: 'PVTSSF_lADOCA2kqc4BV4GuzhRQrS8',
+                startDateFieldId: 'PVTF_lADOCA2kqc4BV4GuzhRQrT0',
+                endDateFieldId: 'PVTF_lADOCA2kqc4BV4GuzhRlSCM',
+              },
+            ];
 
-            if (payload.organization?.login && payload.organization.login !== ORG_LOGIN) {
-              core.info(`skip: org ${payload.organization.login}`);
-              return;
-            }
-
-            const fv = payload.changes?.field_value;
-            if (!fv || fv.field_type !== 'single_select' || fv.field_name !== 'Status') return;
-
-            const num = Number(fv.project_number);
-            const cfg = configs.find((c) => c.number === num);
-            if (!cfg) return;
-            if (fv.field_node_id !== cfg.statusFieldId) return;
-
-            const itemId = payload.projects_v2_item.node_id;
-            const toName = fv.to?.name;
             const today = new Date().toISOString().slice(0, 10);
-            const projectId = cfg.projectId;
 
-            async function getDate(fieldId) {
-              const { node } = await github.graphql(
-                `query ($itemId: ID!) {
-                  node(id: $itemId) {
-                    ... on ProjectV2Item {
-                      fieldValues(first: 40) {
-                        nodes {
-                          ... on ProjectV2ItemFieldDateValue {
-                            date
-                            field { ... on ProjectV2FieldCommon { id } }
+            async function listItems(projectId) {
+              const items = [];
+              let cursor = null;
+              while (true) {
+                const { node } = await github.graphql(
+                  `query ($projectId: ID!, $cursor: String) {
+                    node(id: $projectId) {
+                      ... on ProjectV2 {
+                        items(first: 100, after: $cursor) {
+                          pageInfo { hasNextPage endCursor }
+                          nodes {
+                            id
+                            isArchived
+                            fieldValues(first: 50) {
+                              nodes {
+                                ... on ProjectV2ItemFieldSingleSelectValue {
+                                  name
+                                  field { ... on ProjectV2FieldCommon { id } }
+                                }
+                                ... on ProjectV2ItemFieldDateValue {
+                                  date
+                                  field { ... on ProjectV2FieldCommon { id } }
+                                }
+                              }
+                            }
                           }
                         }
                       }
                     }
-                  }
-                }`,
-                { itemId }
-              );
-              const nodes = node?.fieldValues?.nodes ?? [];
-              return nodes.find((n) => n.field?.id === fieldId)?.date ?? null;
+                  }`,
+                  { projectId, cursor }
+                );
+                const page = node?.items;
+                if (!page) break;
+                items.push(...page.nodes);
+                if (!page.pageInfo.hasNextPage) break;
+                cursor = page.pageInfo.endCursor;
+              }
+              return items;
             }
 
-            async function setDate(fieldId, value) {
+            async function setDate(projectId, itemId, fieldId, value) {
               await github.graphql(
                 `mutation ($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: Date!) {
                   updateProjectV2ItemFieldValue(
@@ -88,18 +92,31 @@ jobs:
               );
             }
 
-            if (toName === STATUS_IN_PROGRESS) {
-              if (await getDate(cfg.startDateFieldId)) return;
-              await setDate(cfg.startDateFieldId, today);
-              core.info(`project=${num} start_date=${today}`);
-              return;
-            }
+            let totalUpdates = 0;
+            for (const cfg of PROJECTS) {
+              const items = await listItems(cfg.projectId);
+              core.info(`project=${cfg.number} items=${items.length}`);
 
-            if (toName === STATUS_DONE) {
-              if (await getDate(cfg.endDateFieldId)) return;
-              await setDate(cfg.endDateFieldId, today);
-              core.info(`project=${num} end_date=${today}`);
-              return;
-            }
+              let updates = 0;
+              for (const it of items) {
+                if (it.isArchived) continue;
+                const fvs = it.fieldValues?.nodes ?? [];
+                const status = fvs.find((n) => n.field?.id === cfg.statusFieldId)?.name ?? null;
+                const startDate = fvs.find((n) => n.field?.id === cfg.startDateFieldId)?.date ?? null;
+                const endDate = fvs.find((n) => n.field?.id === cfg.endDateFieldId)?.date ?? null;
 
-            core.info(`skip: status=${toName}`);
+                if (status === STATUS_IN_PROGRESS && !startDate) {
+                  await setDate(cfg.projectId, it.id, cfg.startDateFieldId, today);
+                  core.info(`project=${cfg.number} item=${it.id} set start_date=${today}`);
+                  updates++;
+                }
+                if (status === STATUS_DONE && !endDate) {
+                  await setDate(cfg.projectId, it.id, cfg.endDateFieldId, today);
+                  core.info(`project=${cfg.number} item=${it.id} set end_date=${today}`);
+                  updates++;
+                }
+              }
+              core.info(`project=${cfg.number} updates=${updates}`);
+              totalUpdates += updates;
+            }
+            core.info(`done updates=${totalUpdates}`);
