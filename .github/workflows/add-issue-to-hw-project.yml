@@ -10,8 +10,24 @@ jobs:
   add-and-set-area:
     runs-on: ubuntu-latest
     steps:
+      - name: Guard — skip if this repo belongs to the SW project (9)
+        id: guard
+        env:
+          REPO: ${{ github.event.repository.name }}
+          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
+        run: |
+          HW_REPOS="rumi-dairy-hw porci rumi-pro rumi rumi-bull rumi-hw pedometer lorawan-devices corni rumi-craft innolaser"
+          HAS_RUMI_PRO=$(echo "$LABELS_JSON" | jq -r 'map(select(. == "rumi pro")) | length > 0')
+          if echo " $HW_REPOS " | grep -qw "$REPO" || [ "$HAS_RUMI_PRO" = "true" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Repo '$REPO' does not belong to the HW project (11). Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Add issue to project
         id: add
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/add-to-project@v1.0.2
         with:
           project-url: https://github.com/orgs/Innogando/projects/11
@@ -19,6 +35,7 @@ jobs:
 
       - name: Resolve Area option id (rumi pro label overrides repo mapping)
         id: area
+        if: steps.guard.outputs.skip != 'true'
         env:
           REPO: ${{ github.event.repository.name }}
           LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
@@ -31,9 +48,9 @@ jobs:
             case "$REPO" in
               rumi-dairy-hw)                                                         OPT="9ee08c7f" ;;  # Rumi Dairy
               porci)                                                                OPT="85a71fc3" ;;  # Porci
-              rumi|rumi-bull|rumi-hw|pedometer|lorawan-devices)                     OPT="8f3c6346" ;;  # Rumi
+              rumi-pro|rumi|rumi-bull|rumi-hw|pedometer|lorawan-devices)               OPT="8f3c6346" ;;  # Rumi
               corni)                                                                OPT="033f7249" ;;  # Corni
-              rumi-firmware|rumi-craft)                                             OPT="d7e1d101" ;;  # Firmware
+              rumi-craft)                                                           OPT="d7e1d101" ;;  # Firmware
               innolaser)                                                            OPT="4146cb6e" ;;  # Taller
               *)                                                                    OPT="" ;;          # sin mapping -> no tocar Area
             esac
@@ -41,7 +58,7 @@ jobs:
           echo "option_id=$OPT" >> "$GITHUB_OUTPUT"
 
       - name: Set Area field
-        if: steps.area.outputs.option_id != ''
+        if: steps.guard.outputs.skip != 'true' && steps.area.outputs.option_id != ''
         env:
           GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
           PROJECT_ID: PVT_kwDOCA2kqc4BV4Gu
@@ -61,6 +78,7 @@ jobs:
           ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
 
       - name: Set Priority field (default P1)
+        if: steps.guard.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
           PROJECT_ID: PVT_kwDOCA2kqc4BV4Gu
