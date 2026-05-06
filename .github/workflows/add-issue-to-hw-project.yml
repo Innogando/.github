@@ -16,9 +16,13 @@ jobs:
           REPO: ${{ github.event.repository.name }}
           LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
         run: |
+          EXCLUDED_REPOS="management"
           HW_REPOS="rumi-dairy-hw porci rumi-pro rumi rumi-bull rumi-hw pedometer lorawan-devices corni rumi-craft innolaser"
           HAS_RUMI_PRO=$(echo "$LABELS_JSON" | jq -r 'map(select(. == "rumi pro")) | length > 0')
-          if echo " $HW_REPOS " | grep -qw "$REPO" || [ "$HAS_RUMI_PRO" = "true" ]; then
+          if echo " $EXCLUDED_REPOS " | grep -qw "$REPO"; then
+            echo "Repo '$REPO' is excluded from all projects. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif echo " $HW_REPOS " | grep -qw "$REPO" || [ "$HAS_RUMI_PRO" = "true" ]; then
             echo "skip=false" >> "$GITHUB_OUTPUT"
           else
             echo "Repo '$REPO' does not belong to the HW project (11). Skipping."

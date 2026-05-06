@@ -15,8 +15,12 @@ jobs:
         env:
           REPO: ${{ github.event.repository.name }}
         run: |
+          EXCLUDED_REPOS="management"
           HW_REPOS="rumi-dairy-hw porci rumi-pro rumi rumi-bull rumi-hw pedometer lorawan-devices corni rumi-craft innolaser"
-          if echo " $HW_REPOS " | grep -qw "$REPO"; then
+          if echo " $EXCLUDED_REPOS " | grep -qw "$REPO"; then
+            echo "Repo '$REPO' is excluded from all projects. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif echo " $HW_REPOS " | grep -qw "$REPO"; then
             echo "Repo '$REPO' belongs to the HW project (11). Skipping SW project (9)."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
