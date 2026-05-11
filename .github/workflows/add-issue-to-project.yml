@@ -14,15 +14,31 @@ jobs:
         id: guard
         env:
           REPO: ${{ github.event.repository.name }}
+          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
         run: |
-          EXCLUDED_REPOS="management"
           HW_REPOS="rumi-dairy-hw porci rumi-pro rumi rumi-bull rumi-hw pedometer lorawan-devices corni rumi-craft innolaser"
-          if echo " $EXCLUDED_REPOS " | grep -qw "$REPO"; then
-            echo "Repo '$REPO' is excluded from all projects. Skipping."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          elif echo " $HW_REPOS " | grep -qw "$REPO"; then
+          if echo " $HW_REPOS " | grep -qw "$REPO"; then
             echo "Repo '$REPO' belongs to the HW project (11). Skipping SW project (9)."
             echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif [ "$REPO" = "management" ]; then
+            labels=$(echo "$LABELS_JSON" | jq -r '.[]')
+            HAS_AREA=false
+            for label in cowtrol data infra rumi; do
+              if echo "$labels" | grep -Fqx "$label"; then
+                HAS_AREA=true
+                break
+              fi
+            done
+            if echo "$labels" | grep -Fqx "cross / platform"; then
+              HAS_AREA=true
+            fi
+            if [ "$HAS_AREA" = "true" ]; then
+              echo "Repo 'management' has an area label. Processing."
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "Repo 'management' has no area label. Skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
