@@ -21,8 +21,8 @@ jobs:
                 number: 9,
                 projectId: 'PVT_kwDOCA2kqc4BUnfM',
                 statusFieldId: 'PVTSSF_lADOCA2kqc4BUnfMzhBucOc',
-                startDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhBuedg',
-                endDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhRbXSE',
+                startDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhUEF1k',
+                endDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhUEGFI',
               },
               {
                 number: 11,
