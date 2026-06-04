@@ -44,7 +44,7 @@ jobs:
                 `query ($org: String!) {
                   organization(login: $org) {
                     issueFields(first: 50) {
-                      nodes { id name }
+                      nodes { ... on Node { id } ... on IssueFieldCommon { name } }
                     }
                   }
                 }`,
