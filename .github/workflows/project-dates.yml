@@ -15,69 +15,33 @@ jobs:
           script: |
             const STATUS_IN_PROGRESS = 'In Progress';
             const STATUS_DONE = 'Done';
-            const ORG = context.repo.owner;
 
+            // startIssueFieldId: org-level IssueField ID used by updateIssueFieldValue
+            // when GitHub rejects updateProjectV2ItemFieldValue for issue-type items.
+            // "End date" has no org issue field equivalent so endIssueFieldId is null;
+            // updateProjectV2ItemFieldValue handles it directly.
             const PROJECTS = [
               {
                 number: 9,
                 projectId: 'PVT_kwDOCA2kqc4BUnfM',
                 statusFieldId: 'PVTSSF_lADOCA2kqc4BUnfMzhBucOc',
                 startDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhUEF1k',
+                startIssueFieldId: 'IFD_kgDOAYWajw',
                 endDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhUEGFI',
+                endIssueFieldId: null,
               },
               {
                 number: 11,
                 projectId: 'PVT_kwDOCA2kqc4BV4Gu',
                 statusFieldId: 'PVTSSF_lADOCA2kqc4BV4GuzhRQrS8',
                 startDateFieldId: 'PVTF_lADOCA2kqc4BV4GuzhRQrT0',
+                startIssueFieldId: 'IFD_kgDOAYWajw',
                 endDateFieldId: 'PVTF_lADOCA2kqc4BV4GuzhRlSCM',
+                endIssueFieldId: null,
               },
             ];
 
             const today = new Date().toISOString().slice(0, 10);
-
-            // Fetch org-level Issue Fields (keyed by name) — needed since GitHub
-            // now requires updateIssueFieldValue for issue items and that mutation
-            // expects Issue Field IDs, not ProjectV2 field IDs.
-            async function fetchOrgIssueFieldsByName() {
-              const { organization } = await github.graphql(
-                `query ($org: String!) {
-                  organization(login: $org) {
-                    issueFields(first: 50) {
-                      nodes { ... on Node { id } ... on IssueFieldCommon { name } }
-                    }
-                  }
-                }`,
-                { headers: { 'GraphQL-Features': 'issue_fields' }, org: ORG }
-              );
-              return Object.fromEntries(
-                (organization?.issueFields?.nodes ?? []).map((f) => [f.name, f.id])
-              );
-            }
-
-            // Map project PVTF_ field IDs → org Issue Field IDs via matching names.
-            async function buildFieldMap(projectId, pvtFieldIds, orgFieldsByName) {
-              const { node } = await github.graphql(
-                `query ($id: ID!) {
-                  node(id: $id) {
-                    ... on ProjectV2 {
-                      fields(first: 50) {
-                        nodes { ... on ProjectV2FieldCommon { id name } }
-                      }
-                    }
-                  }
-                }`,
-                { id: projectId }
-              );
-              const map = {};
-              for (const f of node?.fields?.nodes ?? []) {
-                if (pvtFieldIds.includes(f.id)) {
-                  map[f.id] = orgFieldsByName[f.name] ?? null;
-                  core.info(`field "${f.name}" pvtId=${f.id} issueFieldId=${map[f.id]}`);
-                }
-              }
-              return map;
-            }
 
             async function listItems(projectId) {
               const items = [];
@@ -137,7 +101,7 @@ jobs:
                 );
               } catch (err) {
                 if (!err.errors?.some((e) => e.message.includes('updateIssueFieldValue'))) throw err;
-                if (!issueFieldId) throw new Error(`No Issue Field ID mapped for ${pvtFieldId} on item ${itemId}`);
+                if (!issueFieldId) throw new Error(`No Issue Field ID for ${pvtFieldId} on item ${itemId}`);
 
                 const { node } = await github.graphql(
                   `query ($id: ID!) {
@@ -164,17 +128,8 @@ jobs:
               }
             }
 
-            const orgIssueFieldsByName = await fetchOrgIssueFieldsByName();
-            core.info(`org issue fields: [${Object.keys(orgIssueFieldsByName).join(', ')}]`);
-
             let totalUpdates = 0;
             for (const cfg of PROJECTS) {
-              const fieldMap = await buildFieldMap(
-                cfg.projectId,
-                [cfg.startDateFieldId, cfg.endDateFieldId],
-                orgIssueFieldsByName
-              );
-
               const items = await listItems(cfg.projectId);
               core.info(`project=${cfg.number} items=${items.length}`);
 
@@ -187,12 +142,12 @@ jobs:
                 const endDate = fvs.find((n) => n.field?.id === cfg.endDateFieldId)?.date ?? null;
 
                 if (status === STATUS_IN_PROGRESS && !startDate) {
-                  await setDate(cfg.projectId, it.id, cfg.startDateFieldId, fieldMap[cfg.startDateFieldId], today);
+                  await setDate(cfg.projectId, it.id, cfg.startDateFieldId, cfg.startIssueFieldId, today);
                   core.info(`project=${cfg.number} item=${it.id} set start_date=${today}`);
                   updates++;
                 }
                 if (status === STATUS_DONE && !endDate) {
-                  await setDate(cfg.projectId, it.id, cfg.endDateFieldId, fieldMap[cfg.endDateFieldId], today);
+                  await setDate(cfg.projectId, it.id, cfg.endDateFieldId, cfg.endIssueFieldId, today);
                   core.info(`project=${cfg.number} item=${it.id} set end_date=${today}`);
                   updates++;
                 }
