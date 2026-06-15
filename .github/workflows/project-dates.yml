@@ -43,6 +43,16 @@ jobs:
 
             const today = new Date().toISOString().slice(0, 10);
 
+            function getDateValue(item, pvtFieldId, issueFieldId) {
+              const fvs = item.fieldValues?.nodes ?? [];
+              const projectDate = fvs.find((n) => n.field?.id === pvtFieldId)?.date;
+              if (projectDate) return projectDate;
+
+              if (!issueFieldId) return null;
+              const issueFvs = item.content?.issueFieldValues?.nodes ?? [];
+              return issueFvs.find((n) => n.field?.id === issueFieldId)?.value ?? null;
+            }
+
             async function listItems(projectId) {
               const items = [];
               let cursor = null;
@@ -68,12 +78,24 @@ jobs:
                                 }
                               }
                             }
+                            content {
+                              ... on Issue {
+                                issueFieldValues(first: 20) {
+                                  nodes {
+                                    ... on IssueFieldDateValue {
+                                      value
+                                      field { ... on Node { id } }
+                                    }
+                                  }
+                                }
+                              }
+                            }
                           }
                         }
                       }
                     }
                   }`,
-                  { projectId, cursor }
+                  { headers: { 'GraphQL-Features': 'issue_fields' }, projectId, cursor }
                 );
                 const page = node?.items;
                 if (!page) break;
@@ -138,8 +160,8 @@ jobs:
                 if (it.isArchived) continue;
                 const fvs = it.fieldValues?.nodes ?? [];
                 const status = fvs.find((n) => n.field?.id === cfg.statusFieldId)?.name ?? null;
-                const startDate = fvs.find((n) => n.field?.id === cfg.startDateFieldId)?.date ?? null;
-                const endDate = fvs.find((n) => n.field?.id === cfg.endDateFieldId)?.date ?? null;
+                const startDate = getDateValue(it, cfg.startDateFieldId, cfg.startIssueFieldId);
+                const endDate = getDateValue(it, cfg.endDateFieldId, cfg.endIssueFieldId);
 
                 if (status === STATUS_IN_PROGRESS && !startDate) {
                   await setDate(cfg.projectId, it.id, cfg.startDateFieldId, cfg.startIssueFieldId, today);
