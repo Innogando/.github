@@ -7,7 +7,7 @@ Issue forms populate the **issue body** and set the GitHub **Issue type** (**Obj
 | Project field | Type | Recommended source |
 |---------------|------|-------------------|
 | Title | Text | Issue title (edit when creating) |
-| Status | Single select | Board: Backlog → Ready → In Progress → Blocked → Done. **Set by workflow / board; do not duplicate in body.** |
+| Status | Single select | Board: Backlog → Ready → In Progress → Review → Blocked → Done. **Set by workflow / board; do not duplicate in body.** |
 | Priority | Single select | Board: P0, P1, P2. **Set by workflow (default P1); do not duplicate in body.** |
 | Area | Single select | Board. **Set by workflow:** area labels override repo mapping — see [add-issue-to-project.yml](../workflows/add-issue-to-project.yml). |
 | Size | Single select | Board: XS, S, M, L, XL (only useful for tasks, not for quarterly objectives) |
@@ -18,7 +18,15 @@ Issue forms populate the **issue body** and set the GitHub **Issue type** (**Obj
 
 ## Exact single-select options
 
-**Status:** Backlog, Ready, In Progress, Blocked, Done
+**Status:** Backlog, Ready, In Progress, Review, Blocked, Done
+
+Status semantics (automation-managed — [pr-review-status.yml](../workflows/pr-review-status.yml) and the closed→Done net in [project-dates.yml](../workflows/project-dates.yml)):
+
+| Status | Meaning |
+|---|---|
+| In Progress | Being implemented; no PR yet (or the PR is a draft) |
+| Review | The PR is open/ready — and for rumi-app, also merged to `develop` awaiting the Tuesday release train |
+| Done | **Deployed / published, not merely merged.** Deploy-on-merge repos: at merge to `main` (the issue auto-closes). rumi-app: when the train ships (its `cd.yml` closes the shipped issues) |
 
 **Priority:** P0, P1, P2 (P0 = urgent / production impact; P1 = important; P2 = nice to have)
 
