@@ -1,0 +1,65 @@
+# Issue form · Feature
+# Fields consumed by agents:
+#   solve-issue  → "Problem" / "Proposal" / "Acceptance criteria" / "Out of scope" / "Context pointers"
+#   code-review  → "Acceptance criteria" (the review spec)
+name: Feature
+description: New capability or a change in behaviour that a farmer, a support colleague or an operator will notice.
+title: "feat: "
+type: Feature
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in **English**. Describe the **problem** before the solution. Link issues as full URLs.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who has it, when, how often. If you know the number (tickets, users, farms), write it.
+    validations:
+      required: true
+  - type: textarea
+    id: why_now
+    attributes:
+      label: Why now / user impact
+      description: What we unlock or stop losing. Which objective or criterion it serves (full URL to the management issue).
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The behaviour we want, not the implementation. Screens, API shape, alert text — as the user sees it.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Binary checks a reviewer who did not write the code can verify.
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: What this issue deliberately does not do. Prevents the agent (and the author) from widening the PR.
+  - type: textarea
+    id: pointers
+    attributes:
+      label: Context pointers
+      description: Files, modules, `AGENTS.md` sections, design notes, related issues (full URLs).
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: How we will prove it works in production (metric, dashboard, test, a named person who checks it).
+  - type: input
+    id: provenance
+    attributes:
+      label: Requested by
+      description: Optional. "CTO via Monthly 2026-08-05", "farmer feedback via CoWtrol ticket 3201".

@@ -1,0 +1,78 @@
+# Issue form · Bug
+# Fields consumed by agents:
+#   solve-issue  → "Observed" / "Expected" / "Steps to reproduce" / "Acceptance criteria" / "Context pointers"
+#   code-review  → "Acceptance criteria" (the review spec) and "Verification" (regression test expected)
+# Headings in the rendered body are stable anchors: do not rename them without updating the skills.
+name: Bug
+description: Something in production or develop behaves differently from what it should.
+title: "fix: "
+type: Bug
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in **English**. Link other issues as **full URLs** (short `#123` does not resolve across repos).
+        Never paste customer names, phone numbers or coordinates; use farm/animal **ids**.
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed
+      description: What actually happens. One paragraph. Include the error text, the screen, the endpoint, the DAG.
+      placeholder: "GET /v2/sensors/gateway-sensors returns 404 for every farm since release 2026.08.20-01. The v1 route works."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      description: What should happen instead, from the user's point of view.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered. Environment (prod / develop / local), account role, farm id, animal id, timestamp (UTC).
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Impact
+      options:
+        - S1 · customers cannot use a core flow / data loss / wrong alert sent
+        - S2 · a flow is degraded, workaround exists
+        - S3 · cosmetic or internal only
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Links only — Grafana panel, Cloud Logging query, Crashlytics issue, CoWtrol ticket id, screenshot.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Binary checks. The PR that closes this issue must make every box true. Agents plan against this list.
+      value: |
+        - [ ] 
+        - [ ] A regression test fails before the fix and passes after it
+    validations:
+      required: true
+  - type: textarea
+    id: pointers
+    attributes:
+      label: Context pointers
+      description: Files, modules, DAGs, `AGENTS.md` sections, related issues (full URLs). This is what saves the agent from guessing.
+      placeholder: "rumi-api/app/api/v2/sensors.py · rumi-api/AGENTS.md §Routing · https://github.com/Innogando/rumi-api/issues/574"
+  - type: input
+    id: provenance
+    attributes:
+      label: Reported by
+      description: Optional. Channel and date, e.g. "support via #soporte 2026-08-27". Provenance is a field, never the whole body.

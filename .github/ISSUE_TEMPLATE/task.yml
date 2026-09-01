@@ -1,0 +1,42 @@
+# Issue form · Task  (kept to 5 fields on purpose — this is the form people reach for 50 % of the time)
+# Fields consumed by agents:
+#   solve-issue  → "What" / "Done when" / "Context pointers"
+name: Task
+description: A bounded piece of work that is not a user-visible bug or feature (refactor, migration, config, docs, chore).
+title: ""
+type: Task
+labels: []
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: One paragraph. What changes and where.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: One or two lines. Which criterion, incident or debt it serves (full URL if it exists).
+    validations:
+      required: true
+  - type: textarea
+    id: done_when
+    attributes:
+      label: Done when
+      description: Binary checks. "Deployed" counts, "merged" does not (rumi-app deploys on Tuesdays).
+      value: |
+        - [ ] 
+    validations:
+      required: true
+  - type: textarea
+    id: pointers
+    attributes:
+      label: Context pointers
+      description: Files, modules, `AGENTS.md` sections, related issues (full URLs).
+  - type: input
+    id: provenance
+    attributes:
+      label: Origin
+      description: Optional. "daily 2026-09-02", "Weekly Signal block", "support via #dev".

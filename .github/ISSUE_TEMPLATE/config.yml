@@ -1,8 +1,14 @@
-blank_issues_enabled: true
+# Org-level issue chooser config. Lives at Innogando/.github/.github/ISSUE_TEMPLATE/config.yml
+# and applies to every repo without its own ISSUE_TEMPLATE directory.
+# blank_issues_enabled: false forces a form → every issue has the headings agents anchor on.
+blank_issues_enabled: false
 contact_links:
-  - name: Engineering project (Granja de Rus)
-    url: https://github.com/orgs/Innogando/projects/9
-    about: Single source of truth for work — status, priority, area, and assignment.
-  - name: Innogando website
-    url: https://innogando.com
-    about: Public product information; replace or extend with your internal wiki if you have one.
+  - name: Customer / field problem (not an engineering issue yet)
+    url: https://innogando.slack.com/archives/C0BGQJHNB5M
+    about: Support triages in #soporte first. If it turns out to be a product bug, support opens a Bug with the form.
+  - name: Quarterly objective
+    url: https://github.com/Innogando/management/issues/new?template=objective.yml
+    about: Objectives live only in Innogando/management (issue type Objective).
+  - name: How to write a good issue
+    url: https://github.com/Innogando/engineering-platform/blob/main/context/issue-writing.md
+    about: One page — what each field is for and which fields the agents read.
