@@ -1,0 +1,41 @@
+# Issue form · Support
+# Opened by support/commercial when a customer problem needs engineering. Short by design.
+# Fields consumed by agents:
+#   InnoHermes / solve-issue → "Customer symptom" / "What support already checked" / "Ids"
+name: Support
+description: A customer problem that support could not solve and needs an engineer.
+title: "support: "
+type: Support
+labels: [support]
+body:
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Customer symptom
+      description: What the customer sees, in their words if possible. No names or phone numbers.
+    validations:
+      required: true
+  - type: textarea
+    id: ids
+    attributes:
+      label: Ids
+      description: farm id, animal ids, collar DevEUI(s), gateway id, CoWtrol ticket number.
+    validations:
+      required: true
+  - type: textarea
+    id: checked
+    attributes:
+      label: What support already checked
+      description: Grafana panels, InnoHermes queries, app screens. Saves the engineer repeating it.
+    validations:
+      required: true
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      options:
+        - Today · animals at risk or many farms affected
+        - This week · one farm, workaround exists
+        - Backlog · question or improvement
+    validations:
+      required: true

@@ -1,45 +1,56 @@
+# Issue form · Objective  (corrected version of Innogando/.github/.github/ISSUE_TEMPLATE/objective.yml)
+# Fixes: dead `objective` label removed (0/71 objectives carried it — filter by issue type, not label);
+#        milestone example updated to the real naming (`T4 2026 INNOGANDO - OBJETIVOS`);
+#        each success criterion becomes a sub-issue (the digest counts sub-issues, not checkboxes);
+#        a named verifier per criterion, different from whoever closes it (framework P2).
+# Only valid in Innogando/management. Nothing about variable pay is ever written here.
 name: Objective
-description: Quarterly objective for the team. Keep it outcome-driven, not task-driven.
+description: Quarterly objective for the software team. Outcome-driven, 4–6 per quarter, frozen on the first Monday.
 title: "[OBJECTIVE] "
-labels: [objective]
 type: Objective
+labels: []
 body:
   - type: markdown
     attributes:
       value: |
-        Use this template for **quarterly objectives**. One objective = one outcome you commit to by end of quarter.
-
-        Before submitting:
-        - Assign the quarterly **Milestone** (e.g. `2026 Q2 (Apr-Jun)`). Create it in this repo if it doesn't exist.
-        - Area, Priority and Status are set automatically on the board; no need to repeat them here.
-        - Break the objective into child issues/PRs during refinement. This issue stays as the north star.
-
+        One objective = one outcome the whole software team commits to by end of quarter.
+        - Assign the quarterly **Milestone** (e.g. `T4 2026 INNOGANDO - OBJETIVOS`).
+        - Add the **area label** (`rumi`, `data`, `infra`, `cowtrol`, `cross / platform`) or the issue will not enter Project #9.
+        - After creating it, run `crear-subissues-criterio.py` (or create by hand) **one sub-issue per success criterion**.
   - type: textarea
     id: why
     attributes:
       label: Why now
-      description: Problem, opportunity or strategic bet behind this objective. 2-4 lines.
-      placeholder: "What happens if we don't do this? What do we unlock if we do?"
+      description: Problem, opportunity or strategic bet. 2–4 lines. What happens if we don't do this.
     validations:
       required: true
-
   - type: textarea
     id: goal
     attributes:
       label: Goal
-      description: Outcome in one sentence. Starts with a verb. No implementation detail.
-      placeholder: "Reduce mean time to detect collar failures from 7d to <1d."
+      description: Outcome in one sentence. Starts with a verb. No implementation detail. "Done" means deployed, not merged.
     validations:
       required: true
-
   - type: textarea
     id: success
     attributes:
       label: Success criteria
-      description: Concrete, verifiable checks. Binary or numeric.
+      description: Concrete, verifiable, numeric when the objective is not a feature. Each line names its artefact and a verifier who is not the person closing it.
       value: |
-        - [ ] 
-        - [ ] 
-        - [ ] 
+        - [ ] <criterion> · Artefact: <link type> · Verifies: <person>
+        - [ ] <criterion> · Artefact: <link type> · Verifies: <person>
+        - [ ] <criterion> · Artefact: <link type> · Verifies: <person>
     validations:
       required: true
+  - type: textarea
+    id: perimeters
+    attributes:
+      label: Perimeters involved
+      description: Which repos/areas produce and which only verify. Used for the coverage check before freezing.
+    validations:
+      required: true
+  - type: textarea
+    id: absorbs
+    attributes:
+      label: Absorbs
+      description: Previous objectives or issues this one replaces (full URLs). They get retyped to Task or closed with a comment.

@@ -1,0 +1,64 @@
+# Issue form · Incident
+# Created from the #incidents declaration (templates/incident-declare.md). One issue per incident, in the owning repo
+# (or Innogando/management when it spans several). Closing requires a postmortem for S1/S2 (templates/postmortem.md).
+# Fields consumed by agents:
+#   solve-issue  → "Impact" / "Timeline" / "Root cause" / "Actions"
+#   Weekly Signal generator → open S1/S2 incidents become Block lines
+name: Incident
+description: Something broke in production and a customer or the team was affected.
+title: "incident: "
+type: Incident
+labels: []
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - S1 · customers cannot use a core flow, wrong alerts sent, data loss, or security exposure
+        - S2 · a flow degraded or an internal tool down, workaround exists
+        - S3 · noise, near miss, or internal-only with no customer impact
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who, what, since when (UTC), how many farms/animals/users (ids and counts, no names).
+    validations:
+      required: true
+  - type: textarea
+    id: detection
+    attributes:
+      label: How it was detected
+      description: Alert name, customer report, colleague noticed, agent query. Time from start to detection if known.
+    validations:
+      required: true
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: UTC timestamps. Append as you go; this is the raw material of the postmortem.
+      value: |
+        - HH:MM · 
+    validations:
+      required: true
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root cause
+      description: Fill when known. Mechanism, not blame.
+  - type: textarea
+    id: actions
+    attributes:
+      label: Actions
+      description: Each action is an issue (full URL). At least one must prevent recurrence; for S1/S2 one must be a regression test or an alert.
+      value: |
+        - [ ] Mitigation: 
+        - [ ] Regression test / alert: 
+        - [ ] Runbook updated: 
+  - type: input
+    id: responder
+    attributes:
+      label: Responder
+      description: Who ran the response (the weekly responder unless handed over).

@@ -1,0 +1,70 @@
+# Issue form · Review
+# A Review issue is REVIEW WORK WITH AN OWNER AND A DUE DATE (design, architecture, data model, security, a PR set).
+# It is NOT one issue per pull request — GitHub review requests already do that.
+# Fields consumed by agents:
+#   review-pr    → "What to review" (links) / "Decision needed" / "Review checklist"
+#   Weekly Signal generator → "Needed by" (reviews older than 5 days become a Block line)
+name: Review
+description: Ask a named person to review something by a date and record the outcome.
+title: "review: "
+type: Review
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Assign the **reviewer** as the issue assignee. One reviewer per issue; open two issues for two reviewers.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Design / architecture
+        - Data model / migration
+        - Security / permissions
+        - PR set (several PRs that must be read together)
+        - Model / analysis (ML, metrics, evaluation)
+        - Document / ADR
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What to review
+      description: Full URLs — PRs, docs, ADRs, dashboards, branches. Say what is out of scope for this review.
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision needed
+      description: The question the reviewer has to answer. If it cannot be phrased as a question, it is not a review yet.
+    validations:
+      required: true
+  - type: input
+    id: needed_by
+    attributes:
+      label: Needed by
+      description: Date (YYYY-MM-DD). What is blocked if it slips.
+    validations:
+      required: true
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Review checklist
+      description: What the reviewer should specifically check. Default items are the platform PR checklist.
+      value: |
+        - [ ] Correctness against the acceptance criteria of the linked issues
+        - [ ] Failure modes and rollback
+        - [ ] Data integrity (FKs, migrations, backfills)
+        - [ ] Cost / performance on the read replica
+        - [ ] Security (auth, PII, prompt injection for agent features)
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: Filled by the reviewer before closing. One of Approve / Changes requested / Reject, plus the written rationale and follow-up issues (full URLs).
+      value: |
+        **Verdict:** 
+        **Rationale:** 
+        **Follow-ups:** 
