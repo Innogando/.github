@@ -1,0 +1,32 @@
+# Caller workflow — copy to .github/workflows/linked-issue.yml in each product repo (+ k8s-infra).
+# The job is named "Linked Issue" on purpose: that string is what the ruleset lists as a required status check.
+# No `paths:` filter — innobot and rumi-claude had ai-lint registered for months with zero runs because of one.
+name: Linked Issue
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    branches: [main]
+
+permissions:
+  pull-requests: write   # post / update the advisory comment
+  issues: read           # closingIssuesReferences needs it (same lesson as code-review: without it the list is empty)
+  contents: read
+
+concurrency:
+  group: linked-issue-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  linked-issue:
+    name: Linked Issue
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: Innogando/github-workflows/linked-issue@v2
+        with:
+          # block = exit 1 when no issue is linked and no exemption applies.
+          # The org decision (2026-09-01) is direct enforcement: the check is born
+          # blocking. Prerequisites per repo: org issue forms live + the five
+          # exemption labels created (no-issue, chore, deps, release, hotfix).
+          mode: block
