@@ -8,7 +8,7 @@ Issue forms populate the **issue body** and set the GitHub **Issue type** (**Obj
 |---------------|------|-------------------|
 | Title | Text | Issue title (edit when creating) |
 | Status | Single select | Board: Backlog → Ready → In Progress → Review → Blocked → Done. **Set by workflow / board; do not duplicate in body.** |
-| Priority | Single select | Board: P0, P1, P2. **Set by workflow (default P1); do not duplicate in body.** |
+| Priority | Single select | **Hardware project (#11) only** — removed from #9 on 2026-09-01 (zero options, zero values; ordering happens via Status + the huddle). On #11 the HW workflow defaults it to P1. |
 | Area | Single select | Board. **Set by workflow:** area labels override repo mapping — see [add-issue-to-project.yml](../workflows/add-issue-to-project.yml). |
 | Size | Single select | Board: XS, S, M, L, XL (only useful for tasks, not for quarterly objectives) |
 | Milestone | Milestone | Issue sidebar. Quarterly convention (see below). |
@@ -28,7 +28,7 @@ Status semantics (automation-managed — [pr-review-status.yml](../workflows/pr-
 | Review | The PR is open/ready — and for rumi-app, also merged to `develop` awaiting the Tuesday release train |
 | Done | **Deployed / published, not merely merged.** Deploy-on-merge repos: at merge to `main` (the issue auto-closes). rumi-app: when the train ships (its `cd.yml` closes the shipped issues) |
 
-**Priority:** P0, P1, P2 (P0 = urgent / production impact; P1 = important; P2 = nice to have)
+**Priority (hardware project #11 only):** P0, P1, P2 (P0 = urgent / production impact; P1 = important; P2 = nice to have)
 
 **Size:** XS, S, M, L, XL
 
