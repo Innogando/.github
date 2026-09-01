@@ -1,0 +1,103 @@
+# Reusable workflow: when a PR is opened (or leaves draft), move the linked issues'
+# Project 9 items to Status "Review". Consumers add a 10-line stub (see the docs in
+# PROJECT_SYNC.md). Done is NOT handled here — deploy-on-merge repos rely on issue
+# close (+ the project-dates closed→Done safety net), and rumi-app's release train
+# closes shipped issues from its cd.yml.
+#
+# Option ids are resolved BY NAME at runtime: editing a single-select field
+# regenerates every option id (learned 2026-09-01, the hard way).
+name: PR review status
+
+on:
+  workflow_call:
+    secrets:
+      GH_PROJECTS_PAT:
+        required: true
+
+jobs:
+  review-status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_PROJECTS_PAT }}
+          script: |
+            const PROJECT_ID = 'PVT_kwDOCA2kqc4BUnfM';       // Granja de Rus (project 9)
+            const MOVABLE = new Set(['Backlog', 'Ready', 'In Progress']);
+            const TARGET = 'Review';
+
+            const pr = context.payload.pull_request;
+            if (!pr) { core.info('no pull_request payload — nothing to do'); return; }
+
+            // 1. Linked issues: closingIssuesReferences, else the branch-name number
+            //    (same regex as code-review/review.py and the linked-issue action).
+            const { repository } = await github.graphql(
+              `query ($owner: String!, $name: String!, $pr: Int!) {
+                repository(owner: $owner, name: $name) {
+                  pullRequest(number: $pr) {
+                    closingIssuesReferences(first: 10) { nodes { id number } }
+                  }
+                }
+              }`,
+              { owner: context.repo.owner, name: context.repo.repo, pr: pr.number }
+            );
+            let issues = repository.pullRequest.closingIssuesReferences.nodes;
+            if (issues.length === 0) {
+              const m = pr.head.ref.match(/^(?:[a-z]+\/)?(?:issue-)?([0-9]{1,6})[-_][A-Za-z]/);
+              if (m) {
+                try {
+                  const { data } = await github.rest.issues.get({
+                    ...context.repo, issue_number: Number(m[1]),
+                  });
+                  if (!data.pull_request) issues = [{ id: data.node_id, number: data.number }];
+                } catch (e) { core.info(`branch number ${m[1]} is not an issue here`); }
+              }
+            }
+            if (issues.length === 0) { core.info('no linked issue — nothing to move'); return; }
+
+            // 2. Resolve the Status field and the target option id by name.
+            const { node: project } = await github.graphql(
+              `query ($id: ID!) {
+                node(id: $id) { ... on ProjectV2 {
+                  field(name: "Status") { ... on ProjectV2SingleSelectField {
+                    id options { id name } } }
+                } }
+              }`,
+              { id: PROJECT_ID }
+            );
+            const statusField = project.field;
+            const target = statusField.options.find((o) => o.name === TARGET);
+            if (!target) { core.setFailed(`project has no "${TARGET}" status option`); return; }
+
+            // 3. Move each issue's project-9 item, only from a movable status.
+            for (const issue of issues) {
+              const { node: full } = await github.graphql(
+                `query ($id: ID!) {
+                  node(id: $id) { ... on Issue {
+                    projectItems(first: 10) { nodes {
+                      id project { id }
+                      fieldValueByName(name: "Status") {
+                        ... on ProjectV2ItemFieldSingleSelectValue { name } }
+                    } }
+                  } }
+                }`,
+                { id: issue.id }
+              );
+              const item = (full.projectItems.nodes ?? []).find((n) => n.project.id === PROJECT_ID);
+              if (!item) { core.info(`#${issue.number}: not on project 9`); continue; }
+              const current = item.fieldValueByName?.name ?? '(none)';
+              if (!MOVABLE.has(current)) {
+                core.info(`#${issue.number}: status "${current}" — left alone`);
+                continue;
+              }
+              await github.graphql(
+                `mutation ($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $project, itemId: $item, fieldId: $field,
+                    value: { singleSelectOptionId: $option }
+                  }) { projectV2Item { id } }
+                }`,
+                { project: PROJECT_ID, item: item.id, field: statusField.id, option: target.id }
+              );
+              core.info(`#${issue.number}: ${current} → ${TARGET}`);
+            }

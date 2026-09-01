@@ -20,6 +20,11 @@ jobs:
             // when GitHub rejects updateProjectV2ItemFieldValue for issue-type items.
             // "End date" has no org issue field equivalent so endIssueFieldId is null;
             // updateProjectV2ItemFieldValue handles it directly.
+            // closedToDone: safety net — a closed issue whose Status is not Done is
+            // flipped to Done (project 9 only; Done there means deployed, and issues
+            // close at deploy: on merge for deploy-on-merge repos, from cd.yml when
+            // the rumi-app train ships). Self-heals when the built-in "item closed"
+            // project workflow is off or misses an event.
             const PROJECTS = [
               {
                 number: 9,
@@ -29,6 +34,7 @@ jobs:
                 startIssueFieldId: 'IFD_kgDOAYWajw',
                 endDateFieldId: 'PVTF_lADOCA2kqc4BUnfMzhUEGFI',
                 endIssueFieldId: null,
+                closedToDone: true,
               },
               {
                 number: 11,
@@ -38,6 +44,7 @@ jobs:
                 startIssueFieldId: 'IFD_kgDOAYWajw',
                 endDateFieldId: 'PVTF_lADOCA2kqc4BV4GuzhRlSCM',
                 endIssueFieldId: null,
+                closedToDone: false,
               },
             ];
 
@@ -80,6 +87,7 @@ jobs:
                             }
                             content {
                               ... on Issue {
+                                state
                                 issueFieldValues(first: 20) {
                                   nodes {
                                     ... on IssueFieldDateValue {
@@ -150,18 +158,48 @@ jobs:
               }
             }
 
+            // Option ids are resolved by name at run time: editing a single-select
+            // field regenerates every option id (learned 2026-09-01).
+            async function doneOptionId(cfg) {
+              const { node } = await github.graphql(
+                `query ($id: ID!) {
+                  node(id: $id) { ... on ProjectV2 {
+                    field(name: "Status") { ... on ProjectV2SingleSelectField { options { id name } } }
+                  } }
+                }`,
+                { id: cfg.projectId }
+              );
+              return node?.field?.options?.find((o) => o.name === STATUS_DONE)?.id ?? null;
+            }
+
             let totalUpdates = 0;
             for (const cfg of PROJECTS) {
               const items = await listItems(cfg.projectId);
               core.info(`project=${cfg.number} items=${items.length}`);
+              const doneId = cfg.closedToDone ? await doneOptionId(cfg) : null;
 
               let updates = 0;
               for (const it of items) {
                 if (it.isArchived) continue;
                 const fvs = it.fieldValues?.nodes ?? [];
-                const status = fvs.find((n) => n.field?.id === cfg.statusFieldId)?.name ?? null;
+                let status = fvs.find((n) => n.field?.id === cfg.statusFieldId)?.name ?? null;
                 const startDate = getDateValue(it, cfg.startDateFieldId, cfg.startIssueFieldId);
                 const endDate = getDateValue(it, cfg.endDateFieldId, cfg.endIssueFieldId);
+
+                if (doneId && it.content?.state === 'CLOSED' && status !== STATUS_DONE) {
+                  await github.graphql(
+                    `mutation ($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+                      updateProjectV2ItemFieldValue(input: {
+                        projectId: $project, itemId: $item, fieldId: $field,
+                        value: { singleSelectOptionId: $option }
+                      }) { projectV2Item { id } }
+                    }`,
+                    { project: cfg.projectId, item: it.id, field: cfg.statusFieldId, option: doneId }
+                  );
+                  core.info(`project=${cfg.number} item=${it.id} closed issue: status ${status} → ${STATUS_DONE}`);
+                  status = STATUS_DONE;
+                  updates++;
+                }
 
                 if (status === STATUS_IN_PROGRESS && !startDate) {
                   await setDate(cfg.projectId, it.id, cfg.startDateFieldId, cfg.startIssueFieldId, today);
