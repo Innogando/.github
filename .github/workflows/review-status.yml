@@ -1,0 +1,16 @@
+# Moves a linked issue's Project 9 item to "Review" when its PR opens or leaves
+# draft. Not a required check. Reusable workflow: Innogando/.github.
+# The @main ref below is the org convention for Innogando/.github reusable
+# workflows (identical to auto-add-to-project.yml in every repo): that repo
+# publishes no release tags, and the action-ref-pinned rule deliberately covers
+# only Innogando/github-workflows actions. Reviewed and accepted 2026-09-01.
+name: Review status
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+    branches: [main]
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    uses: Innogando/.github/.github/workflows/pr-review-status.yml@main
+    secrets: inherit
