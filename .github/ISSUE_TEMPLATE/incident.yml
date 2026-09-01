@@ -1,5 +1,5 @@
 # Issue form · Incident
-# Created from the #incidents declaration (templates/incident-declare.md). One issue per incident, in the owning repo
+# Created from the incident declaration posted in #software (the dedicated #incidents channel was removed 2026-09-01 — it sat empty since July). One issue per incident, in the owning repo
 # (or Innogando/management when it spans several). Closing requires a postmortem for S1/S2 (templates/postmortem.md).
 # Fields consumed by agents:
 #   solve-issue  → "Impact" / "Timeline" / "Root cause" / "Actions"
