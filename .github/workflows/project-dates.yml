@@ -160,7 +160,7 @@ jobs:
 
             // Option ids are resolved by name at run time: editing a single-select
             // field regenerates every option id (learned 2026-09-01).
-            async function doneOptionId(cfg) {
+            async function statusOptionIds(cfg) {
               const { node } = await github.graphql(
                 `query ($id: ID!) {
                   node(id: $id) { ... on ProjectV2 {
@@ -169,14 +169,18 @@ jobs:
                 }`,
                 { id: cfg.projectId }
               );
-              return node?.field?.options?.find((o) => o.name === STATUS_DONE)?.id ?? null;
+              const byName = {};
+              for (const o of node?.field?.options ?? []) byName[o.name] = o.id;
+              return byName;
             }
 
             let totalUpdates = 0;
             for (const cfg of PROJECTS) {
               const items = await listItems(cfg.projectId);
               core.info(`project=${cfg.number} items=${items.length}`);
-              const doneId = cfg.closedToDone ? await doneOptionId(cfg) : null;
+              const options = cfg.closedToDone ? await statusOptionIds(cfg) : {};
+              const doneId = options[STATUS_DONE] ?? null;
+              const backlogId = options['Backlog'] ?? null;
 
               let updates = 0;
               for (const it of items) {
@@ -185,6 +189,21 @@ jobs:
                 let status = fvs.find((n) => n.field?.id === cfg.statusFieldId)?.name ?? null;
                 const startDate = getDateValue(it, cfg.startDateFieldId, cfg.startIssueFieldId);
                 const endDate = getDateValue(it, cfg.endDateFieldId, cfg.endIssueFieldId);
+
+                if (backlogId && !status && it.content?.state === 'OPEN') {
+                  await github.graphql(
+                    `mutation ($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+                      updateProjectV2ItemFieldValue(input: {
+                        projectId: $project, itemId: $item, fieldId: $field,
+                        value: { singleSelectOptionId: $option }
+                      }) { projectV2Item { id } }
+                    }`,
+                    { project: cfg.projectId, item: it.id, field: cfg.statusFieldId, option: backlogId }
+                  );
+                  core.info(`project=${cfg.number} item=${it.id} statusless open issue → Backlog`);
+                  status = 'Backlog';
+                  updates++;
+                }
 
                 if (doneId && it.content?.state === 'CLOSED' && status !== STATUS_DONE) {
                   await github.graphql(
