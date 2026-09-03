@@ -28,6 +28,9 @@ jobs:
       - name: Run the routing tests
         run: python3 registry/test_registry.py
 
+      - name: repos.json is in sync with repos.yml
+        run: python3 registry/export.py --check
+
   registry-vs-org:
     name: Registry vs organisation
     runs-on: ubuntu-latest

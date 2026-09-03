@@ -76,8 +76,16 @@ area owner. Remove it once someone has confirmed the value.
 | `innobot/reports` | `sw_repo_area`, `hw_repos`, `label_area` all come from here |
 | `framework-personas-v2/operativa` | the area list and label ids |
 
-Fetch it, do not copy it:
+Fetch it, do not copy it. `repos.json` is generated from `repos.yml` by
+`export.py` and kept in sync by CI, so a consumer needs no YAML parser:
 
 ```bash
-gh api repos/Innogando/.github/contents/registry/repos.yml --jq .content | base64 -d
+gh api repos/Innogando/.github/contents/registry/repos.json --jq .content \
+  | base64 -d | jq '.derived.sw_repo_area'
 ```
+
+It carries the derivations consumers used to compute for themselves:
+`derived.sw_repo_area`, `derived.hw_repo_area`, `derived.hw_repos`,
+`derived.require_label` and `derived.platform_required`.
+
+**After editing `repos.yml`, run `python3 registry/export.py`.** CI fails if you forget.

@@ -1,0 +1,402 @@
+{
+  "_generated": "GENERATED from repos.yml by registry/export.py -- do not edit",
+  "schema": 1,
+  "projects": {
+    "9": {
+      "name": "Granja de Rus",
+      "id": "PVT_kwDOCA2kqc4BUnfM",
+      "area_field": "PVTSSF_lADOCA2kqc4BUnfMzhQ1c-M",
+      "scope": "software"
+    },
+    "11": {
+      "name": "Granja de Hardware",
+      "id": "PVT_kwDOCA2kqc4BV4Gu",
+      "area_field": "PVTSSF_lADOCA2kqc4BV4GuzhRQrT8",
+      "scope": "firmware",
+      "default_priority": "P1"
+    }
+  },
+  "areas": {
+    "9": [
+      "CoWtrol",
+      "Rumi",
+      "Data",
+      "Infra",
+      "Cross / Platform"
+    ],
+    "11": [
+      "Rumi",
+      "Rumi PRO",
+      "Corni",
+      "Taller",
+      "Hw Operations",
+      "Porci",
+      "Firmware",
+      "Rumi Dairy"
+    ]
+  },
+  "label_overrides": [
+    {
+      "label": "cowtrol",
+      "area": "CoWtrol",
+      "colour": "15eb55"
+    },
+    {
+      "label": "cross / platform",
+      "area": "Cross / Platform",
+      "colour": "2c3f20"
+    },
+    {
+      "label": "data",
+      "area": "Data",
+      "colour": "3d6fb2"
+    },
+    {
+      "label": "infra",
+      "area": "Infra",
+      "colour": "0d94f7"
+    },
+    {
+      "label": "rumi",
+      "area": "Rumi",
+      "colour": "9d8804"
+    },
+    {
+      "label": "rumi pro",
+      "area": "Rumi PRO",
+      "colour": "8d969e"
+    }
+  ],
+  "repos": {
+    "airflow": {
+      "project": 9,
+      "area": "Data",
+      "platform": "required"
+    },
+    "cowtrol": {
+      "project": 9,
+      "area": "CoWtrol",
+      "platform": "required"
+    },
+    "cowtrol-api": {
+      "project": 9,
+      "area": "CoWtrol",
+      "platform": "required"
+    },
+    "github-workflows": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "required"
+    },
+    "grafana": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "required"
+    },
+    "innobot": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "required"
+    },
+    "innoweb": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "required"
+    },
+    "k8s-infra": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "required"
+    },
+    "rumi-api": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "required"
+    },
+    "rumi-app": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "required"
+    },
+    "rumi-claude": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "required"
+    },
+    "rumia-agent": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "required"
+    },
+    ".github": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
+    "andorra-integration": {
+      "project": 9,
+      "area": "CoWtrol",
+      "platform": "exempt",
+      "confirm": true
+    },
+    "asterisk": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "exempt"
+    },
+    "chirpstack-integration": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "exempt",
+      "confirm": true
+    },
+    "corni-api": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt",
+      "product": "corni",
+      "confirm": true
+    },
+    "engineering-platform": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
+    "fonia-integration": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "exempt",
+      "confirm": true
+    },
+    "heats-detection": {
+      "project": 9,
+      "area": "Data",
+      "platform": "exempt"
+    },
+    "management": {
+      "project": 9,
+      "area": null,
+      "platform": "exempt",
+      "require_label": true
+    },
+    "mapa-pac": {
+      "project": 9,
+      "area": "Data",
+      "platform": "exempt"
+    },
+    "mikrotik-programer": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "exempt"
+    },
+    "pagosdeizcala-integration": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "Rumi-Gps-Utilities": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "rumi-knowledge": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "exempt",
+      "confirm": true
+    },
+    "rumi-pro-api": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "exempt",
+      "product": "rumi-pro",
+      "confirm": true
+    },
+    "sigpac": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "exempt",
+      "confirm": true
+    },
+    "splash-api": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
+    "splash_ui": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
+    "support-knowledge": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
+    "vo-connector": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "cinta-test": {
+      "project": 11,
+      "area": "Taller",
+      "platform": "exempt"
+    },
+    "corni": {
+      "project": 11,
+      "area": "Corni",
+      "platform": "exempt"
+    },
+    "innolaser": {
+      "project": 11,
+      "area": "Taller",
+      "platform": "exempt"
+    },
+    "lorawan-devices": {
+      "project": 11,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "pedometer": {
+      "project": 11,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "Porci": {
+      "project": 11,
+      "area": "Porci",
+      "platform": "exempt"
+    },
+    "rumi": {
+      "project": 11,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "rumi-bull": {
+      "project": 11,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "rumi-craft": {
+      "project": 11,
+      "area": "Firmware",
+      "platform": "exempt"
+    },
+    "rumi-dairy-hw": {
+      "project": 11,
+      "area": "Rumi Dairy",
+      "platform": "exempt"
+    },
+    "rumi-hw": {
+      "project": 11,
+      "area": "Rumi",
+      "platform": "exempt"
+    },
+    "rumi-pro": {
+      "project": 11,
+      "area": "Rumi",
+      "platform": "exempt"
+    }
+  },
+  "unlisted_ok": [
+    "app-trazabilidade",
+    "app-trazabilidade-backend",
+    "app-trazabilidade-web",
+    "Armario-carga-baterias",
+    "Atornillador-Automatico",
+    "Biblioteca-Innogando",
+    "brazo-laser",
+    "brazo-tests",
+    "Hardware-Operations-Supply-Chain",
+    "Impresora-3D-Bambu-A1",
+    "Impresora-3D-Prusa-MK3S",
+    "innogando-lib-kicad",
+    "Maquina-cortar-correas",
+    "Maquina-de-coser-automatica",
+    "maquina-pegado-robot",
+    "Pataposte",
+    "Taller-Innogando",
+    "trazabilidad-wagyu"
+  ],
+  "derived": {
+    "sw_repo_area": {
+      ".github": "Cross / Platform",
+      "Rumi-Gps-Utilities": "Rumi",
+      "airflow": "Data",
+      "andorra-integration": "CoWtrol",
+      "asterisk": "Infra",
+      "chirpstack-integration": "Infra",
+      "corni-api": "Cross / Platform",
+      "cowtrol": "CoWtrol",
+      "cowtrol-api": "CoWtrol",
+      "engineering-platform": "Cross / Platform",
+      "fonia-integration": "Infra",
+      "github-workflows": "Cross / Platform",
+      "grafana": "Infra",
+      "heats-detection": "Data",
+      "innobot": "Cross / Platform",
+      "innoweb": "Cross / Platform",
+      "k8s-infra": "Infra",
+      "mapa-pac": "Data",
+      "mikrotik-programer": "Infra",
+      "pagosdeizcala-integration": "Rumi",
+      "rumi-api": "Rumi",
+      "rumi-app": "Rumi",
+      "rumi-claude": "Cross / Platform",
+      "rumi-knowledge": "Rumi",
+      "rumi-pro-api": "Rumi",
+      "rumia-agent": "Cross / Platform",
+      "sigpac": "Rumi",
+      "splash-api": "Cross / Platform",
+      "splash_ui": "Cross / Platform",
+      "support-knowledge": "Cross / Platform",
+      "vo-connector": "Rumi"
+    },
+    "hw_repo_area": {
+      "Porci": "Porci",
+      "cinta-test": "Taller",
+      "corni": "Corni",
+      "innolaser": "Taller",
+      "lorawan-devices": "Rumi",
+      "pedometer": "Rumi",
+      "rumi": "Rumi",
+      "rumi-bull": "Rumi",
+      "rumi-craft": "Firmware",
+      "rumi-dairy-hw": "Rumi Dairy",
+      "rumi-hw": "Rumi",
+      "rumi-pro": "Rumi"
+    },
+    "hw_repos": [
+      "Porci",
+      "cinta-test",
+      "corni",
+      "innolaser",
+      "lorawan-devices",
+      "pedometer",
+      "rumi",
+      "rumi-bull",
+      "rumi-craft",
+      "rumi-dairy-hw",
+      "rumi-hw",
+      "rumi-pro"
+    ],
+    "require_label": [
+      "management"
+    ],
+    "platform_required": [
+      "airflow",
+      "cowtrol",
+      "cowtrol-api",
+      "github-workflows",
+      "grafana",
+      "innobot",
+      "innoweb",
+      "k8s-infra",
+      "rumi-api",
+      "rumi-app",
+      "rumi-claude",
+      "rumia-agent"
+    ]
+  }
+}
