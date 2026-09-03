@@ -87,8 +87,15 @@ def test_every_declared_area_is_declared_for_its_own_project():
 
 def test_every_label_override_names_an_area_of_some_project():
     known = {a for areas in REGISTRY["areas"].values() for a in areas}
-    for label, area in REGISTRY["label_overrides"]:
+    for label, area, *_colour in REGISTRY["label_overrides"]:
         assert area in known, f"label {label!r} maps to unknown area {area!r}"
+
+
+def test_every_label_override_carries_a_hex_colour():
+    """label-sync.yml creates these labels, so each needs a colour."""
+    for label, _area, *colour in REGISTRY["label_overrides"]:
+        assert colour and len(colour[0]) == 6, f"label {label!r} has no 6-digit colour"
+        int(colour[0], 16)
 
 
 def test_no_repo_is_both_registered_and_unlisted():

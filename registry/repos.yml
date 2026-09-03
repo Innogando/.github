@@ -43,15 +43,15 @@ areas:
 
 # An issue label overrides the repo's default Area. First match in this order wins.
 # The label must name an Area that exists on that issue's project, or it is ignored.
-# label-sync.yml creates these labels in every enrolled repo, so the override actually
-# works -- before the registry the labels existed only in `management`.
+# label-sync.yml creates these labels (name, Area, colour) in every enrolled repo, so
+# the override actually works -- before the registry they existed only in `management`.
 label_overrides:
-  - ["cowtrol",          "CoWtrol"]
-  - ["cross / platform", "Cross / Platform"]
-  - ["data",             "Data"]
-  - ["infra",            "Infra"]
-  - ["rumi",             "Rumi"]
-  - ["rumi pro",         "Rumi PRO"]
+  - ["cowtrol",          "CoWtrol",          "15eb55"]
+  - ["cross / platform", "Cross / Platform", "2c3f20"]
+  - ["data",             "Data",             "3d6fb2"]
+  - ["infra",            "Infra",            "0d94f7"]
+  - ["rumi",             "Rumi",             "9d8804"]
+  - ["rumi pro",         "Rumi PRO",         "8d969e"]
 
 # Per-repo routing and platform adoption.
 #

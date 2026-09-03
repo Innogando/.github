@@ -9,7 +9,7 @@ Issue forms populate the **issue body** and set the GitHub **Issue type** (**Obj
 | Title | Text | Issue title (edit when creating) |
 | Status | Single select | Board: Backlog → Ready → In Progress → Review → Blocked → Done. **Set by workflow / board; do not duplicate in body.** |
 | Priority | Single select | **Hardware project (#11) only** — removed from #9 on 2026-09-01 (zero options, zero values; ordering happens via Status + the huddle). On #11 the HW workflow defaults it to P1. |
-| Area | Single select | Board. **Set by workflow:** area labels override repo mapping — see [add-issue-to-project.yml](../workflows/add-issue-to-project.yml). |
+| Area | Single select | **Set by workflow from [`registry/repos.yml`](../../registry/repos.yml)** — the repo's declared Area, overridden by an area label on the issue. |
 | Size | Single select | Board: XS, S, M, L, XL (only useful for tasks, not for quarterly objectives) |
 | Milestone | Milestone | Issue sidebar. Quarterly convention (see below). |
 | Assignees | People | Board or issue |
@@ -32,9 +32,18 @@ Status semantics (automation-managed — [pr-review-status.yml](../workflows/pr-
 
 **Size:** XS, S, M, L, XL
 
-**Area (software project #9):** CoWtrol, Rumi, Data, Infra, Cross / Platform. Optional GitHub labels (_exact name_) override the repo default: `cowtrol`, `cross / platform`, `data`, `infra`, `rumi`. If several are present, precedence is that order. Then repo-based defaults (e.g. `airflow` → Data, …) — see [add-issue-to-project.yml](../workflows/add-issue-to-project.yml).
+**Area (software project #9):** CoWtrol, Rumi, Data, Infra, Cross / Platform.
 
-**Area (hardware project #11):** Rumi, Rumi PRO, Rumi Dairy, Corni, Firmware, Taller, Porci — repo mappings are applied by [add-issue-to-hw-project.yml](../workflows/add-issue-to-hw-project.yml).
+**Area (hardware project #11):** Rumi, Rumi PRO, Corni, Taller, Hw Operations, Porci, Firmware, Rumi Dairy.
+
+Both lists, and which repo gets which Area, live in one place: [`registry/repos.yml`](../../registry/repos.yml). Adding a repo or moving it between areas is a one-line change there.
+
+An area label on the issue (`cowtrol`, `cross / platform`, `data`, `infra`, `rumi`, `rumi pro`) overrides the repo's declared Area. Precedence is the order they appear in `label_overrides`, and a label is ignored when it names an Area that its board does not have — `rumi pro` therefore does nothing on #9. `label-sync.yml` creates these labels in every enrolled repo; until it ran they existed only in `management`, so the override was documented but not usable.
+
+`management` is the one repo with no default Area (`require_label: true`): an issue there without an area label is not added to the board at all.
+
+Repo names in the registry are matched exactly. `registry-validate.yml` rejects a name the organisation does not spell that way — the check exists because the previous hardware list said `porci` while the repo is `Porci`, so every issue opened there from 2026-05-06 reached no board.
+
 
 ## Issue types and labels
 
@@ -67,8 +76,15 @@ gh api repos/Innogando/.github/milestones \
 
 ## Refreshing this reference
 
-Dump fields from the CLI:
+`registry-validate.yml` already compares the registry's Area lists against both boards on every change and weekly, so a rename shows up as a failed check rather than as silent mis-routing. To look by hand:
 
 ```bash
 gh project field-list 9 --owner Innogando --format json
+gh project field-list 11 --owner Innogando --format json
+```
+
+To see how a given issue would be routed:
+
+```bash
+python3 registry/resolve.py --repo cowtrol-api --labels '["infra"]'
 ```

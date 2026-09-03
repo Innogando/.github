@@ -78,7 +78,7 @@ def resolve(registry: dict[str, Any], repo: str, labels: Iterable[str] = ()) -> 
 
     # A label wins over the repo default, but only if it names an Area that exists on
     # this repo's board: `rumi pro` maps to an Area that only project 11 has.
-    for label, area in registry["label_overrides"] or []:
+    for label, area, *_colour in registry["label_overrides"] or []:
         if label in set(labels) and area in valid_areas:
             return Decision(False, f"label '{label}'", project, area, from_label=True)
 

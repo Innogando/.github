@@ -15,7 +15,9 @@ body:
       value: |
         One objective = one outcome the whole software team commits to by end of quarter.
         - Assign the quarterly **Milestone** (e.g. `T4 2026 INNOGANDO - OBJETIVOS`).
-        - Add the **area label** (`rumi`, `data`, `infra`, `cowtrol`, `cross / platform`) or the issue will not enter Project #9.
+        - Add an **area label** (`rumi`, `data`, `infra`, `cowtrol`, `cross / platform`) to choose the Area.
+          In `management` it is required, because that repo has no default Area. Everywhere else it
+          overrides the repo's default from [`registry/repos.yml`](../../registry/repos.yml).
         - After creating it, run `crear-subissues-criterio.py` (or create by hand) **one sub-issue per success criterion**.
   - type: textarea
     id: why
