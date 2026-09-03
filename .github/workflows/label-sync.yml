@@ -38,7 +38,19 @@ jobs:
           # Automatic runs only report. Creating labels across the org is a visible
           # change to other people's repos, so applying it takes a deliberate
           # workflow_dispatch with apply: true.
-          DRY: ${{ inputs.apply == true && '' || '--dry-run' }}
+          #
+          # Branch in the shell, not in an expression: `a && '' || b` always yields
+          # `b`, because GitHub's ternary selects the first *truthy* value and the
+          # empty string is falsy. That made the apply path unreachable while the
+          # run still reported success.
+          APPLY: ${{ inputs.apply }}
         run: |
           set -o pipefail
-          python3 registry/sync_labels.py $DRY | tee -a "$GITHUB_STEP_SUMMARY"
+          if [ "$APPLY" = "true" ]; then
+            echo "mode: apply" | tee -a "$GITHUB_STEP_SUMMARY"
+            python3 registry/sync_labels.py | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "mode: dry run (dispatch with apply=true to create labels)" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+            python3 registry/sync_labels.py --dry-run | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
