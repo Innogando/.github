@@ -29,7 +29,8 @@ import registry as reg  # noqa: E402
 
 def emit(**pairs: object) -> None:
     out = os.environ.get("GITHUB_OUTPUT")
-    lines = [f"{k}={v}" for k, v in pairs.items()]
+    # GITHUB_OUTPUT is line-oriented: a newline in a value would forge extra outputs.
+    lines = [f"{k}={str(v).replace(chr(10), ' ').replace(chr(13), ' ')}" for k, v in pairs.items()]
     if out:
         with open(out, "a", encoding="utf-8") as fh:
             fh.write("\n".join(lines) + "\n")

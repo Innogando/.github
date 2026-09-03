@@ -23,7 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install --quiet pyyaml
+      - name: Install PyYAML if the runner lacks it
+        run: python3 -c "import yaml" 2>/dev/null || pip install --quiet pyyaml
       - name: Run the routing tests
         run: python3 registry/test_registry.py
 
@@ -33,7 +34,8 @@ jobs:
     needs: resolver-tests
     steps:
       - uses: actions/checkout@v4
-      - run: pip install --quiet pyyaml
+      - name: Install PyYAML if the runner lacks it
+        run: python3 -c "import yaml" 2>/dev/null || pip install --quiet pyyaml
       - name: Validate against the live organisation
         env:
           # Needs org repo listing and read access to both project boards, which

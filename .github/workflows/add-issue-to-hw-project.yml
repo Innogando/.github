@@ -1,4 +1,9 @@
-name: Add issue to Granja de Hardware project
+name: Add issue to a project board (hardware alias)
+
+# Compatibility shim. The two add-issue workflows collapsed into
+# add-issue-to-project.yml, which routes by registry/repos.yml rather than by which
+# file the caller happened to pick. This alias keeps the hardware repos' existing
+# auto-add-to-project.yml working until they are repointed, and is then deleted.
 
 on:
   workflow_call:
@@ -7,96 +12,6 @@ on:
         required: true
 
 jobs:
-  add-and-set-area:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Guard — skip if this repo belongs to the SW project (9)
-        id: guard
-        env:
-          REPO: ${{ github.event.repository.name }}
-          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
-        run: |
-          EXCLUDED_REPOS="management"
-          HW_REPOS="rumi-dairy-hw porci rumi-pro rumi rumi-bull rumi-hw pedometer lorawan-devices corni rumi-craft innolaser"
-          HAS_RUMI_PRO=$(echo "$LABELS_JSON" | jq -r 'map(select(. == "rumi pro")) | length > 0')
-          if echo " $EXCLUDED_REPOS " | grep -qw "$REPO"; then
-            echo "Repo '$REPO' is excluded from all projects. Skipping."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          elif echo " $HW_REPOS " | grep -qw "$REPO" || [ "$HAS_RUMI_PRO" = "true" ]; then
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "Repo '$REPO' does not belong to the HW project (11). Skipping."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Add issue to project
-        id: add
-        if: steps.guard.outputs.skip != 'true'
-        uses: actions/add-to-project@v1.0.2
-        with:
-          project-url: https://github.com/orgs/Innogando/projects/11
-          github-token: ${{ secrets.GH_PROJECTS_PAT }}
-
-      - name: Resolve Area option id (rumi pro label overrides repo mapping)
-        id: area
-        if: steps.guard.outputs.skip != 'true'
-        env:
-          REPO: ${{ github.event.repository.name }}
-          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
-        run: |
-          set -euo pipefail
-          labels=$(echo "$LABELS_JSON" | jq -r '.[]')
-          if echo "$labels" | grep -Fqx 'rumi pro'; then
-            OPT="bbc23f7e"   # Rumi PRO (label override — any repo)
-          else
-            case "$REPO" in
-              rumi-dairy-hw)                                                         OPT="9ee08c7f" ;;  # Rumi Dairy
-              porci)                                                                OPT="85a71fc3" ;;  # Porci
-              rumi-pro|rumi|rumi-bull|rumi-hw|pedometer|lorawan-devices)               OPT="8f3c6346" ;;  # Rumi
-              corni)                                                                OPT="033f7249" ;;  # Corni
-              rumi-craft)                                                           OPT="d7e1d101" ;;  # Firmware
-              innolaser)                                                            OPT="4146cb6e" ;;  # Taller
-              *)                                                                    OPT="" ;;          # sin mapping -> no tocar Area
-            esac
-          fi
-          echo "option_id=$OPT" >> "$GITHUB_OUTPUT"
-
-      - name: Set Area field
-        if: steps.guard.outputs.skip != 'true' && steps.area.outputs.option_id != ''
-        env:
-          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
-          PROJECT_ID: PVT_kwDOCA2kqc4BV4Gu
-          FIELD_ID: PVTSSF_lADOCA2kqc4BV4GuzhRQrT8
-          ITEM_ID: ${{ steps.add.outputs.itemId }}
-          OPTION_ID: ${{ steps.area.outputs.option_id }}
-        run: |
-          gh api graphql -f query='
-            mutation($project:ID!,$item:ID!,$field:ID!,$opt:String!) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $project
-                itemId:    $item
-                fieldId:   $field
-                value:     { singleSelectOptionId: $opt }
-              }) { projectV2Item { id } }
-            }
-          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
-
-      - name: Set Priority field (default P1)
-        if: steps.guard.outputs.skip != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
-          PROJECT_ID: PVT_kwDOCA2kqc4BV4Gu
-          FIELD_ID: PVTSSF_lADOCA2kqc4BV4GuzhRQrTs
-          ITEM_ID: ${{ steps.add.outputs.itemId }}
-          OPTION_ID: 7cf0f370
-        run: |
-          gh api graphql -f query='
-            mutation($project:ID!,$item:ID!,$field:ID!,$opt:String!) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $project
-                itemId:    $item
-                fieldId:   $field
-                value:     { singleSelectOptionId: $opt }
-              }) { projectV2Item { id } }
-            }
-          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
+  add:
+    uses: Innogando/.github/.github/workflows/add-issue-to-project.yml@main
+    secrets: inherit

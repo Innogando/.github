@@ -1,4 +1,15 @@
-name: Add issue to Granja de Rus project
+name: Add issue to a project board
+
+# One entry point for both boards. Which board and Area an issue gets comes from
+# registry/repos.yml in this repo -- see registry/registry.py for the decision, and
+# registry/test_registry.py for what it guarantees.
+#
+# Two things this deliberately does NOT do, because both used to bite:
+#   - it never stores Area option ids. Editing a single-select field regenerates
+#     every option id (learned 2026-09-01), and the two boards reuse the same id
+#     strings for different names, so ids are resolved by name at run time.
+#   - it has no catch-all default. A repo nobody registered fails the run instead
+#     of quietly filing its issues under Cross / Platform.
 
 on:
   workflow_call:
@@ -7,96 +18,87 @@ on:
         required: true
 
 jobs:
-  add-and-set-area:
+  add-and-set-fields:
     runs-on: ubuntu-latest
     steps:
-      - name: Guard — skip if this repo belongs to the HW project (11)
-        id: guard
+      - name: Check out the registry
+        uses: actions/checkout@v4
+        with:
+          repository: Innogando/.github
+          ref: main
+          # Innogando/.github is private, so the caller's GITHUB_TOKEN cannot read it.
+          token: ${{ secrets.GH_PROJECTS_PAT }}
+          sparse-checkout: registry
+
+      - name: Install PyYAML if the runner lacks it
+        run: python3 -c "import yaml" 2>/dev/null || pip install --quiet pyyaml
+
+      - name: Resolve the board and Area from the registry
+        id: route
         env:
           REPO: ${{ github.event.repository.name }}
           LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
         run: |
-          HW_REPOS="rumi-dairy-hw porci rumi-pro rumi rumi-bull rumi-hw pedometer lorawan-devices corni rumi-craft innolaser"
-          if echo " $HW_REPOS " | grep -qw "$REPO"; then
-            echo "Repo '$REPO' belongs to the HW project (11). Skipping SW project (9)."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          elif [ "$REPO" = "management" ]; then
-            labels=$(echo "$LABELS_JSON" | jq -r '.[]')
-            HAS_AREA=false
-            for label in cowtrol data infra rumi; do
-              if echo "$labels" | grep -Fqx "$label"; then
-                HAS_AREA=true
-                break
-              fi
-            done
-            if echo "$labels" | grep -Fqx "cross / platform"; then
-              HAS_AREA=true
-            fi
-            if [ "$HAS_AREA" = "true" ]; then
-              echo "Repo 'management' has an area label. Processing."
-              echo "skip=false" >> "$GITHUB_OUTPUT"
-            else
-              echo "Repo 'management' has no area label. Skipping."
-              echo "skip=true" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
+          python3 registry/resolve.py --repo "$REPO" --labels "$LABELS_JSON"
 
       - name: Add issue to project
         id: add
-        if: steps.guard.outputs.skip != 'true'
+        if: steps.route.outputs.skip != 'true'
         uses: actions/add-to-project@v1.0.2
         with:
-          project-url: https://github.com/orgs/Innogando/projects/9
+          project-url: https://github.com/orgs/Innogando/projects/${{ steps.route.outputs.project }}
           github-token: ${{ secrets.GH_PROJECTS_PAT }}
 
-      - name: Resolve Area option id (labels override repo mapping)
-        id: area
-        if: steps.guard.outputs.skip != 'true'
-        env:
-          REPO: ${{ github.event.repository.name }}
-          LABELS_JSON: ${{ toJson(github.event.issue.labels.*.name) }}
-        run: |
-          set -euo pipefail
-          labels=$(echo "$LABELS_JSON" | jq -r '.[]')
-
-          OPT=""
-          # Granja de Rus Área IDs — primera coincidencia gana si hay varias etiquetas de área
-          if echo "$labels" | grep -Fqx 'cowtrol'; then
-            OPT="8f3c6346"   # CoWtrol
-          elif echo "$labels" | grep -Fqx 'cross / platform'; then
-            OPT="86907580"   # Cross / Platform
-          elif echo "$labels" | grep -Fqx 'data'; then
-            OPT="033f7249"   # Data
-          elif echo "$labels" | grep -Fqx 'infra'; then
-            OPT="3ca30339"   # Infra
-          elif echo "$labels" | grep -Fqx 'rumi'; then
-            OPT="bbc23f7e"   # Rumi
-          fi
-
-          if [ -z "$OPT" ]; then
-            case "$REPO" in
-              airflow)                 OPT="033f7249" ;;   # Data
-              cowtrol|cowtrol-api)     OPT="8f3c6346" ;;   # CoWtrol
-              rumi-api|rumi-app)       OPT="bbc23f7e" ;;   # Rumi
-              k8s-infra)               OPT="3ca30339" ;;   # Infra
-              *)                       OPT="86907580" ;;   # Cross / Platform (incl. management)
-            esac
-          fi
-          echo "option_id=$OPT" >> "$GITHUB_OUTPUT"
-
-      - name: Set Area field
-        if: steps.guard.outputs.skip != 'true'
+      - name: Set Area
+        if: steps.route.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
-          PROJECT_ID: PVT_kwDOCA2kqc4BUnfM
-          FIELD_ID: PVTSSF_lADOCA2kqc4BUnfMzhQ1c-M
+          PROJECT_ID: ${{ steps.route.outputs.project_id }}
           ITEM_ID: ${{ steps.add.outputs.itemId }}
-          OPTION_ID: ${{ steps.area.outputs.option_id }}
+          FIELD_NAME: Area
+          WANT: ${{ steps.route.outputs.area }}
         run: |
+          set -euo pipefail
+
+          # Resolve the field id and the option id by NAME, every run, never cached:
+          # editing a single-select regenerates every option id, and #11 reuses #9's
+          # id strings for different names.
+          # A missing field yields an empty FIELD_ID rather than aborting, so the
+          # caller below can say which of the two went wrong.
+          resolved=$(
+            gh api graphql -f query='
+              query($project: ID!, $field: String!) {
+                node(id: $project) {
+                  ... on ProjectV2 {
+                    field(name: $field) {
+                      ... on ProjectV2SingleSelectField { id options { id name } }
+                    }
+                  }
+                }
+              }
+            ' -f project="$PROJECT_ID" -f field="$FIELD_NAME" 2>/dev/null \
+              | jq -r --arg want "$WANT" '
+                  (.data.node.field // {})
+                  | [ (.id // "")
+                    , ((((.options // [])[] | select(.name == $want)).id) // "")
+                    ]
+                  | @tsv
+                '
+          ) || resolved=""
+          FIELD_ID=$(printf '%s' "$resolved" | cut -f1)
+          OPTION_ID=$(printf '%s' "$resolved" | cut -f2)
+          if [ -z "$FIELD_ID" ]; then
+            echo "::error::Project $PROJECT_ID has no Area field."
+            exit 1
+          fi
+          if [ -z "$OPTION_ID" ]; then
+            echo "::error::Area '$WANT' is not an option of project $PROJECT_ID." \
+                 "registry-validate.yml should have caught this -- check registry/repos.yml."
+            exit 1
+          fi
+          echo "Area '$WANT' -> option $OPTION_ID on field $FIELD_ID"
           gh api graphql -f query='
-            mutation($project:ID!,$item:ID!,$field:ID!,$opt:String!) {
+            mutation($project: ID!, $item: ID!, $field: ID!, $opt: String!) {
               updateProjectV2ItemFieldValue(input: {
                 projectId: $project
                 itemId:    $item
@@ -104,10 +106,66 @@ jobs:
                 value:     { singleSelectOptionId: $opt }
               }) { projectV2Item { id } }
             }
-          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$FIELD_ID" -f opt="$OPTION_ID"
+          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" \
+            -f field="$FIELD_ID" -f opt="$OPTION_ID"
 
-      - name: Ensure Issue Type (default Task, support/censo labels override; skip if already set)
-        if: steps.guard.outputs.skip != 'true'
+      - name: Set the board's default Priority
+        if: steps.route.outputs.skip != 'true' && steps.route.outputs.default_priority != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+          PROJECT_ID: ${{ steps.route.outputs.project_id }}
+          ITEM_ID: ${{ steps.add.outputs.itemId }}
+          FIELD_NAME: Priority
+          WANT: ${{ steps.route.outputs.default_priority }}
+        run: |
+          set -euo pipefail
+
+          # Resolve the field id and the option id by NAME, every run, never cached:
+          # editing a single-select regenerates every option id, and #11 reuses #9's
+          # id strings for different names.
+          # A missing field yields an empty FIELD_ID rather than aborting, so the
+          # caller below can say which of the two went wrong.
+          resolved=$(
+            gh api graphql -f query='
+              query($project: ID!, $field: String!) {
+                node(id: $project) {
+                  ... on ProjectV2 {
+                    field(name: $field) {
+                      ... on ProjectV2SingleSelectField { id options { id name } }
+                    }
+                  }
+                }
+              }
+            ' -f project="$PROJECT_ID" -f field="$FIELD_NAME" 2>/dev/null \
+              | jq -r --arg want "$WANT" '
+                  (.data.node.field // {})
+                  | [ (.id // "")
+                    , ((((.options // [])[] | select(.name == $want)).id) // "")
+                    ]
+                  | @tsv
+                '
+          ) || resolved=""
+          FIELD_ID=$(printf '%s' "$resolved" | cut -f1)
+          OPTION_ID=$(printf '%s' "$resolved" | cut -f2)
+          if [ -z "$FIELD_ID" ] || [ -z "$OPTION_ID" ]; then
+            echo "::warning::Project $PROJECT_ID has no Priority option '$WANT'; leaving it unset."
+            exit 0
+          fi
+          echo "Priority '$WANT' -> option $OPTION_ID on field $FIELD_ID"
+          gh api graphql -f query='
+            mutation($project: ID!, $item: ID!, $field: ID!, $opt: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId:    $item
+                fieldId:   $field
+                value:     { singleSelectOptionId: $opt }
+              }) { projectV2Item { id } }
+            }
+          ' -f project="$PROJECT_ID" -f item="$ITEM_ID" \
+            -f field="$FIELD_ID" -f opt="$OPTION_ID"
+
+      - name: Ensure Issue Type (default Task; censo/support labels override)
+        if: steps.route.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
           ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
@@ -116,8 +174,8 @@ jobs:
           set -euo pipefail
 
           current=$(gh api graphql -f query='
-            query($issue:ID!) {
-              node(id:$issue) { ... on Issue { issueType { name } } }
+            query($issue: ID!) {
+              node(id: $issue) { ... on Issue { issueType { name } } }
             }
           ' -f issue="$ISSUE_NODE_ID" | jq -r '.data.node.issueType.name // empty')
 
@@ -136,8 +194,8 @@ jobs:
           fi
 
           gh api graphql -f query='
-            mutation($issue:ID!,$type:ID!) {
-              updateIssueIssueType(input:{ issueId:$issue, issueTypeId:$type }) {
+            mutation($issue: ID!, $type: ID!) {
+              updateIssueIssueType(input: { issueId: $issue, issueTypeId: $type }) {
                 issue { id issueType { name } }
               }
             }
