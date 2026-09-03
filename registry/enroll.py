@@ -75,6 +75,20 @@ def has_caller(repo: str) -> bool:
     return code == 0
 
 
+def has_open_pr(repo: str) -> bool:
+    """True when the enrollment PR is already open, so a re-run is idempotent."""
+    code, out, _ = run(
+        "gh", "pr", "list", "-R", f"{ORG}/{repo}", "--head", BRANCH,
+        "--state", "open", "--json", "number", "--jq", "length",
+    )
+    return code == 0 and out.strip() not in ("", "0")
+
+
+def default_branch(repo: str) -> str | None:
+    code, out, _ = run("gh", "api", f"repos/{ORG}/{repo}", "--jq", ".default_branch")
+    return out.strip() if code == 0 and out.strip() else None
+
+
 def enroll(repo: str, project: int, area: str | None, template: str,
            issue: str | None = None) -> str | None:
     """Open the PR. Returns an error message, or None on success."""
@@ -93,13 +107,23 @@ def enroll(repo: str, project: int, area: str | None, template: str,
             ("git", "add", CALLER_PATH),
             ("git", "-c", "commit.gpgsign=false", "commit", "--no-gpg-sign", "-m",
              f"ci: route new issues to project #{project}"),
-            ("git", "push", "-u", "origin", BRANCH),
+            # --force-with-lease: a half-finished earlier wave may have left the
+            # branch pushed but unmerged, and its content is this same file.
+            ("git", "push", "--force-with-lease", "-u", "origin", BRANCH),
         ):
             code, _, err = run(*args, cwd=tmp)
             if code != 0:
                 return f"{args[1]} failed: {err}"
+
+        base = default_branch(repo)
+        if base is None:
+            return "cannot resolve the default branch"
+        # --head and --base explicitly: `gh pr create` infers them from the local
+        # branch's tracking state, which a throwaway clone does not reliably have,
+        # and not every repo's default branch is `main` (rumi-pro-api uses master).
         code, out, err = run(
             "gh", "pr", "create", "-R", f"{ORG}/{repo}",
+            "--base", base, "--head", BRANCH,
             "--title", f"ci: route new issues to project #{project}",
             "--body", PR_BODY.format(
                 tracking=tracking_line(repo, issue),
@@ -134,7 +158,7 @@ def main() -> int:
             continue
         if args.repo and name not in args.repo:
             continue
-        if has_caller(name):
+        if has_caller(name) or has_open_pr(name):
             continue
         pending.append((name, cfg["project"], cfg.get("area")))
 
