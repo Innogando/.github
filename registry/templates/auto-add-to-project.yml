@@ -1,0 +1,17 @@
+name: Auto-add issues to a project board
+
+# Identical in every enrolled repo. Which board and Area this repo's issues get is
+# decided by registry/repos.yml in Innogando/.github, not by this file -- so moving a
+# repo between boards is a one-line change there and needs no PR here.
+#
+# Distributed by engineering-platform; edit the copy in
+# Innogando/.github/registry/templates/ instead of this one.
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add:
+    uses: Innogando/.github/.github/workflows/add-issue-to-project.yml@main
+    secrets: inherit

@@ -1,0 +1,47 @@
+name: Platform adoption drift
+
+# Compares the adoption declared in registry/repos.yml against reality: pin present,
+# pin vs newest release, pin vs the tree sync actually wrote, conformance workflow
+# present, and repos carrying a pin that nobody declared.
+#
+# This replaces the hand-maintained "the 8 repos" loop in engineering-platform's
+# docs/CONTRIBUTING-platform.md and the columns of docs/audit/drift-matrix.md, both
+# of which had been wrong since three more repos adopted the conventions.
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      fail_on_error:
+        description: 'Fail the run when findings exist'
+        type: boolean
+        default: false
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PyYAML if the runner lacks it
+        run: python3 -c "import yaml" 2>/dev/null || pip install --quiet pyyaml
+
+      - name: Check adoption against reality
+        id: drift
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+        run: |
+          set -o pipefail
+          status=0
+          python3 registry/platform_drift.py --format markdown > fleet.md || status=$?
+          cat fleet.md >> "$GITHUB_STEP_SUMMARY"
+          echo "findings=$status" >> "$GITHUB_OUTPUT"
+          if [ "${{ inputs.fail_on_error }}" = "true" ]; then
+            exit "$status"
+          fi
+
+      - name: Publish the fleet table
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleet
+          path: fleet.md

@@ -1,0 +1,44 @@
+name: Sync area labels
+
+# The registry lets an issue label override its repo's default Area. That only works
+# if the labels exist, and before the registry they existed in `management` alone --
+# so the override documented in PROJECT_SYNC.md was dead everywhere else, and the
+# `rumi pro` label, advertised as working in any repo, lived only in the one repo
+# excluded from the hardware board.
+#
+# Each repo gets only the labels naming an Area its own board has. Labels are created
+# and recoloured, never deleted: a label removed here would vanish from the issues
+# already carrying it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'registry/repos.yml'
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Actually create and recolour the labels'
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PyYAML if the runner lacks it
+        run: python3 -c "import yaml" 2>/dev/null || pip install --quiet pyyaml
+
+      - name: Sync labels
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+          # Automatic runs only report. Creating labels across the org is a visible
+          # change to other people's repos, so applying it takes a deliberate
+          # workflow_dispatch with apply: true.
+          DRY: ${{ inputs.apply == true && '' || '--dry-run' }}
+        run: |
+          set -o pipefail
+          python3 registry/sync_labels.py $DRY | tee -a "$GITHUB_STEP_SUMMARY"

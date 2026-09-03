@@ -1,0 +1,143 @@
+# Innogando repository registry
+#
+# Single source of truth for two facts about every active software and firmware repo:
+#
+#   1. which project board its issues route to, and which Area they get
+#   2. whether the repo is expected to carry the engineering-platform conventions
+#
+# Adding a repo or moving an area is a one-line change here. Nothing else needs editing:
+# .github/workflows/add-issue-to-project.yml reads this file, and so do the innobot
+# digests and the framework-personas scripts.
+#
+# Consumers (fetch the raw file, do not copy the values):
+#   gh api repos/Innogando/.github/contents/registry/repos.yml --jq .content | base64 -d
+#
+# registry-validate.yml enforces, on every PR touching this file and weekly:
+#   - every key is a live, non-archived org repo with exactly that casing
+#   - every `area` is a current option of that project's Area field
+#   - every active software/firmware org repo appears in `repos` or `unlisted_ok`
+#   - every repo carrying auto-add-to-project.yml has an entry with a matching `project`
+
+schema: 1
+
+projects:
+  9:
+    name: "Granja de Rus"
+    id: PVT_kwDOCA2kqc4BUnfM
+    area_field: PVTSSF_lADOCA2kqc4BUnfMzhQ1c-M
+    scope: software
+  11:
+    name: "Granja de Hardware"
+    id: PVT_kwDOCA2kqc4BV4Gu
+    area_field: PVTSSF_lADOCA2kqc4BV4GuzhRQrT8
+    scope: firmware
+    default_priority: P1
+
+# Area names only. Option ids are resolved by name at run time and never stored here:
+# editing a single-select field regenerates every option id (learned 2026-09-01, see
+# project-dates.yml), and the two boards happen to reuse the same id strings for
+# different names -- 8f3c6346 is CoWtrol on #9 but Rumi on #11.
+areas:
+  9:  [CoWtrol, Rumi, Data, Infra, "Cross / Platform"]
+  11: [Rumi, "Rumi PRO", Corni, Taller, "Hw Operations", Porci, Firmware, "Rumi Dairy"]
+
+# An issue label overrides the repo's default Area. First match in this order wins.
+# The label must name an Area that exists on that issue's project, or it is ignored.
+# label-sync.yml creates these labels (name, Area, colour) in every enrolled repo, so
+# the override actually works -- before the registry they existed only in `management`.
+label_overrides:
+  - ["cowtrol",          "CoWtrol",          "15eb55"]
+  - ["cross / platform", "Cross / Platform", "2c3f20"]
+  - ["data",             "Data",             "3d6fb2"]
+  - ["infra",            "Infra",            "0d94f7"]
+  - ["rumi",             "Rumi",             "9d8804"]
+  - ["rumi pro",         "Rumi PRO",         "8d969e"]
+
+# Per-repo routing and platform adoption.
+#
+#   project        9 | 11 | none        none = issues stay off the boards
+#   area           an Area name from `areas[project]`, or null with require_label: true
+#   require_label  true = skip the issue unless it carries an area label
+#   platform       required | exempt    required = must carry .ai-platform.json,
+#                                       checked by platform-drift.yml
+#   product        optional grouping key for reporting, when no Area fits
+#   confirm        true = seeded value, still to be confirmed by the area owner
+#   notes          why this entry looks the way it does
+repos:
+  # --- #9 Granja de Rus (software) --------------------------------------------
+  airflow:                    { project: 9, area: Data, platform: required }
+  cowtrol:                    { project: 9, area: CoWtrol, platform: required }
+  cowtrol-api:                { project: 9, area: CoWtrol, platform: required }
+  github-workflows:           { project: 9, area: "Cross / Platform", platform: required }
+  grafana:                    { project: 9, area: Infra, platform: required }
+  innobot:                    { project: 9, area: "Cross / Platform", platform: required }
+  # has AGENTS.md but no pin yet; declared required so drift reports it
+  innoweb:                    { project: 9, area: "Cross / Platform", platform: required }
+  k8s-infra:                  { project: 9, area: Infra, platform: required }
+  rumi-api:                   { project: 9, area: Rumi, platform: required }
+  rumi-app:                   { project: 9, area: Rumi, platform: required }
+  rumi-claude:                { project: 9, area: "Cross / Platform", platform: required }
+  rumia-agent:                { project: 9, area: "Cross / Platform", platform: required }
+  # this repo: org templates, reusable workflows and this registry
+  ".github":                  { project: 9, area: "Cross / Platform", platform: exempt }
+  andorra-integration:        { project: 9, area: CoWtrol, platform: exempt, confirm: true }
+  asterisk:                   { project: 9, area: Infra, platform: exempt }
+  # board history is CoWtrol 2 / Infra 1
+  chirpstack-integration:     { project: 9, area: Infra, platform: exempt, confirm: true }
+  # no Corni Area on #9; grouped via product
+  corni-api:                  { project: 9, area: "Cross / Platform", platform: exempt, product: corni, confirm: true }
+  # is the platform; carries no pin of its own
+  engineering-platform:       { project: 9, area: "Cross / Platform", platform: exempt }
+  fonia-integration:          { project: 9, area: Infra, platform: exempt, confirm: true }
+  heats-detection:            { project: 9, area: Data, platform: exempt }
+  # cross-cutting planning repo: Area comes from the issue's area label
+  management:                 { project: 9, area: null, platform: exempt, require_label: true }
+  mapa-pac:                   { project: 9, area: Data, platform: exempt }
+  mikrotik-programer:         { project: 9, area: Infra, platform: exempt }
+  pagosdeizcala-integration:  { project: 9, area: Rumi, platform: exempt }
+  Rumi-Gps-Utilities:         { project: 9, area: Rumi, platform: exempt }
+  rumi-knowledge:             { project: 9, area: Rumi, platform: exempt, confirm: true }
+  # no Rumi PRO Area on #9; grouped under Rumi via product
+  rumi-pro-api:               { project: 9, area: Rumi, platform: exempt, product: rumi-pro, confirm: true }
+  sigpac:                     { project: 9, area: Rumi, platform: exempt, confirm: true }
+  splash-api:                 { project: 9, area: "Cross / Platform", platform: exempt }
+  splash_ui:                  { project: 9, area: "Cross / Platform", platform: exempt }
+  support-knowledge:          { project: 9, area: "Cross / Platform", platform: exempt }
+  vo-connector:               { project: 9, area: Rumi, platform: exempt }
+
+  # --- #11 Granja de Hardware (firmware) --------------------------------------
+  cinta-test:       { project: 11, area: Taller, platform: exempt }
+  corni:            { project: 11, area: Corni, platform: exempt }
+  innolaser:        { project: 11, area: Taller, platform: exempt }
+  lorawan-devices:  { project: 11, area: Rumi, platform: exempt }
+  pedometer:        { project: 11, area: Rumi, platform: exempt }
+  # canonical name is capitalised; the old lower-case list never matched it
+  Porci:            { project: 11, area: Porci, platform: exempt }
+  rumi:             { project: 11, area: Rumi, platform: exempt }
+  rumi-bull:        { project: 11, area: Rumi, platform: exempt }
+  rumi-craft:       { project: 11, area: Firmware, platform: exempt }
+  rumi-dairy-hw:    { project: 11, area: "Rumi Dairy", platform: exempt }
+  rumi-hw:          { project: 11, area: Rumi, platform: exempt }
+  rumi-pro:         { project: 11, area: Rumi, platform: exempt }
+
+# Active repos deliberately left out of the registry. Listed so that the
+# "every active repo is registered" check stays a real gate instead of noise.
+unlisted_ok:
+  - app-trazabilidade                  # traceability product - out of scope
+  - app-trazabilidade-backend          # traceability product - out of scope
+  - app-trazabilidade-web              # traceability product - out of scope
+  - Armario-carga-baterias             # mechanical
+  - Atornillador-Automatico            # mechanical
+  - Biblioteca-Innogando               # document library
+  - brazo-laser                        # mechanical
+  - brazo-tests                        # mechanical
+  - Hardware-Operations-Supply-Chain   # hardware operations - not software or firmware
+  - Impresora-3D-Bambu-A1              # mechanical
+  - Impresora-3D-Prusa-MK3S            # mechanical
+  - innogando-lib-kicad                # KiCad part library
+  - Maquina-cortar-correas             # mechanical
+  - Maquina-de-coser-automatica        # mechanical
+  - maquina-pegado-robot               # mechanical
+  - Pataposte                          # mechanical
+  - Taller-Innogando                   # workshop operations - not software or firmware
+  - trazabilidad-wagyu                 # traceability product - out of scope

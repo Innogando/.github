@@ -1,0 +1,58 @@
+name: Validate repository registry
+
+# The registry is only useful if it cannot quietly disagree with the organisation.
+# Runs on every change to it, and weekly so that a repo created (or a board Area
+# renamed) outside a PR still gets caught.
+
+on:
+  pull_request:
+    paths:
+      - 'registry/**'
+      - '.github/workflows/registry-validate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'registry/**'
+  schedule:
+    - cron: '30 6 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  resolver-tests:
+    name: Resolver tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PyYAML if the runner lacks it
+        run: python3 -c "import yaml" 2>/dev/null || pip install --quiet pyyaml
+      - name: Run the routing tests
+        run: python3 registry/test_registry.py
+
+      - name: repos.json is in sync with repos.yml
+        run: python3 registry/export.py --check
+
+  registry-vs-org:
+    name: Registry vs organisation
+    runs-on: ubuntu-latest
+    needs: resolver-tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PyYAML if the runner lacks it
+        run: python3 -c "import yaml" 2>/dev/null || pip install --quiet pyyaml
+      - name: Validate against the live organisation
+        env:
+          # Needs org repo listing and read access to both project boards, which
+          # the default GITHUB_TOKEN does not have.
+          GH_TOKEN: ${{ secrets.GH_PROJECTS_PAT }}
+        run: |
+          # pipefail so that tee cannot mask a non-zero exit from the validator
+          set -o pipefail
+          status=0
+          python3 registry/validate.py --format github | tee /tmp/registry-validate.log || status=$?
+          {
+            echo '### Registry vs organisation'
+            echo '```'
+            cat /tmp/registry-validate.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
