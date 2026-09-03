@@ -32,17 +32,37 @@ TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates",
                         "auto-add-to-project.yml")
 BRANCH = "ci/auto-add-to-project"
 
+TRACKING_REPO = f"{ORG}/.github"
+
 PR_BODY = """\
+{tracking}
+
 Routes this repository's new issues to its board, as declared in
 [`registry/repos.yml`](https://github.com/Innogando/.github/blob/main/registry/repos.yml):
 **project #{project}, Area `{area}`**.
 
-The workflow file is identical in every enrolled repository -- it only calls the
-shared reusable workflow. Moving this repo to a different board or Area is a one-line
-change in the registry and needs no further PR here.
+The workflow file is identical in every enrolled repository -- it names no board and
+no Area, it only calls the shared reusable workflow. Moving this repo to a different
+board or Area is a one-line change in the registry and needs no further PR here.
 
 Issues opened before this lands are unaffected; only newly opened issues are added.
 """
+
+
+def tracking_line(repo: str, issue: str | None) -> str:
+    """How this PR points at the issue that explains the wave.
+
+    Only `Innogando/.github` gates on a same-repo linked issue, and that is where
+    the tracking issue lives, so it gets `Closes`. Everywhere else a cross-repo
+    reference is the honest form: one issue explains twenty identical PRs, and
+    twenty near-identical issues would be noise on the boards this very change is
+    meant to make readable.
+    """
+    if not issue:
+        return ""
+    if repo == TRACKING_REPO.split("/", 1)[1]:
+        return f"Closes #{issue}."
+    return f"Part of {TRACKING_REPO}#{issue}."
 
 
 def run(*args: str, cwd: str | None = None) -> tuple[int, str, str]:
@@ -55,7 +75,8 @@ def has_caller(repo: str) -> bool:
     return code == 0
 
 
-def enroll(repo: str, project: int, area: str | None, template: str) -> str | None:
+def enroll(repo: str, project: int, area: str | None, template: str,
+           issue: str | None = None) -> str | None:
     """Open the PR. Returns an error message, or None on success."""
     with tempfile.TemporaryDirectory() as tmp:
         code, _, err = run("gh", "repo", "clone", f"{ORG}/{repo}", tmp, "--", "--depth", "1")
@@ -80,7 +101,11 @@ def enroll(repo: str, project: int, area: str | None, template: str) -> str | No
         code, out, err = run(
             "gh", "pr", "create", "-R", f"{ORG}/{repo}",
             "--title", f"ci: route new issues to project #{project}",
-            "--body", PR_BODY.format(project=project, area=area or "from the issue's area label"),
+            "--body", PR_BODY.format(
+                tracking=tracking_line(repo, issue),
+                project=project,
+                area=area or "from the issue's area label",
+            ),
             cwd=tmp,
         )
         if code != 0:
@@ -93,6 +118,10 @@ def main() -> int:
     ap.add_argument("--registry", default=reg.DEFAULT_PATH)
     ap.add_argument("--apply", action="store_true", help="actually open the PRs")
     ap.add_argument("--repo", action="append", help="limit to these repos (repeatable)")
+    ap.add_argument(
+        "--issue",
+        help=f"number of the tracking issue in {ORG}/.github that the PRs reference",
+    )
     args = ap.parse_args()
 
     registry = reg.load(args.registry)
@@ -118,7 +147,7 @@ def main() -> int:
             print(f"would enroll {name:<28} -> #{project} / {area}")
             continue
         print(f"enrolling {name} -> #{project} / {area} ... ", end="", flush=True)
-        err = enroll(name, project, area, template)
+        err = enroll(name, project, area, template, args.issue)
         print(err or "done")
 
     if not args.apply:
