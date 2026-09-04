@@ -37,16 +37,38 @@ TRACKING_REPO = f"{ORG}/.github"
 PR_BODY = """\
 {tracking}
 
+{lede}
+
 Routes this repository's new issues to its board, as declared in
 [`registry/repos.yml`](https://github.com/Innogando/.github/blob/main/registry/repos.yml):
 **project #{project}, Area `{area}`**.
 
-The workflow file is identical in every enrolled repository -- it names no board and
-no Area, it only calls the shared reusable workflow. Moving this repo to a different
-board or Area is a one-line change in the registry and needs no further PR here.
+The workflow file is identical in every registered repository -- it names no board
+and no Area, it only calls the shared reusable workflow. Moving this repo to a
+different board or Area is a one-line change in the registry and needs no further PR
+here. Identical is also what lets `engineering-platform` distribute the file and
+conformance check it.
 
 Issues opened before this lands are unaffected; only newly opened issues are added.
 """
+
+LEDE = {
+    "missing": "Adds the caller workflow: this repo is registered but its issues "
+               "currently reach no board.",
+    "alias": "Repoints the caller from the `add-issue-to-hw-project.yml` "
+             "compatibility alias to the unified workflow. **Routing does not "
+             "change** -- the alias already forwards there -- but while any caller "
+             "still uses it the alias cannot be deleted.",
+    "drift": "Replaces a caller that predates the registry with the current "
+             "template. **No behaviour change**: it already called the unified "
+             "workflow; only the header and comments differ.",
+}
+
+TITLE = {
+    "missing": "ci: route new issues to project #{project}",
+    "alias": "ci: repoint the issue-routing caller off the hardware alias",
+    "drift": "ci: use the current issue-routing caller template",
+}
 
 
 def tracking_line(repo: str, issue: str | None) -> str:
@@ -70,9 +92,43 @@ def run(*args: str, cwd: str | None = None) -> tuple[int, str, str]:
     return proc.returncode, proc.stdout.strip(), proc.stderr.strip()
 
 
-def has_caller(repo: str) -> bool:
-    code, _, _ = run("gh", "api", f"repos/{ORG}/{repo}/contents/{CALLER_PATH}")
-    return code == 0
+def caller_body(repo: str) -> str | None:
+    """The repo's caller workflow as text, or None when it has none."""
+    code, out, _ = run(
+        "gh", "api", f"repos/{ORG}/{repo}/contents/{CALLER_PATH}", "--jq", ".content"
+    )
+    if code != 0 or not out.strip():
+        return None
+    import base64
+    return base64.b64decode(out).decode("utf-8", "replace")
+
+
+#: Workflow the unified caller must invoke. Anything else is a functional problem,
+#: not a cosmetic one.
+UNIFIED_REF = "add-issue-to-project.yml"
+ALIAS_REF = "add-issue-to-hw-project.yml"
+
+
+def caller_state(repo: str, template: str) -> str:
+    """One of "missing", "alias", "drift" or "current".
+
+    The first wave could see only "missing", because `has_caller` merely asked
+    whether the file existed. Two other states matter:
+
+    "alias"  still calls add-issue-to-hw-project.yml. Routing is already correct --
+             the alias forwards to the unified workflow, which reads the registry --
+             but it blocks deleting the alias.
+    "drift"  calls the right workflow with different text (an older header, no
+             comments). Harmless today, but a file that is not identical everywhere
+             is one engineering-platform cannot distribute and conformance cannot
+             check, which was the point of unifying it.
+    """
+    body = caller_body(repo)
+    if body is None:
+        return "missing"
+    if body.strip() == template.strip():
+        return "current"
+    return "alias" if ALIAS_REF in body else "drift"
 
 
 def has_open_pr(repo: str) -> bool:
@@ -90,7 +146,7 @@ def default_branch(repo: str) -> str | None:
 
 
 def enroll(repo: str, project: int, area: str | None, template: str,
-           issue: str | None = None) -> str | None:
+           issue: str | None = None, state: str = "missing") -> str | None:
     """Open the PR. Returns an error message, or None on success."""
     with tempfile.TemporaryDirectory() as tmp:
         code, _, err = run("gh", "repo", "clone", f"{ORG}/{repo}", tmp, "--", "--depth", "1")
@@ -106,7 +162,7 @@ def enroll(repo: str, project: int, area: str | None, template: str,
         for args in (
             ("git", "add", CALLER_PATH),
             ("git", "-c", "commit.gpgsign=false", "commit", "--no-gpg-sign", "-m",
-             f"ci: route new issues to project #{project}"),
+             TITLE[state].format(project=project)),
             # --force-with-lease: a half-finished earlier wave may have left the
             # branch pushed but unmerged, and its content is this same file.
             ("git", "push", "--force-with-lease", "-u", "origin", BRANCH),
@@ -124,9 +180,10 @@ def enroll(repo: str, project: int, area: str | None, template: str,
         code, out, err = run(
             "gh", "pr", "create", "-R", f"{ORG}/{repo}",
             "--base", base, "--head", BRANCH,
-            "--title", f"ci: route new issues to project #{project}",
+            "--title", TITLE[state].format(project=project),
             "--body", PR_BODY.format(
                 tracking=tracking_line(repo, issue),
+                lede=LEDE[state],
                 project=project,
                 area=area or "from the issue's area label",
             ),
@@ -146,6 +203,14 @@ def main() -> int:
         "--issue",
         help=f"number of the tracking issue in {ORG}/.github that the PRs reference",
     )
+    ap.add_argument(
+        "--repoint", action="store_true",
+        help="only repos whose caller exists but is an alias or has drifted",
+    )
+    ap.add_argument(
+        "--all", action="store_true",
+        help="both missing and stale callers in one wave",
+    )
     args = ap.parse_args()
 
     registry = reg.load(args.registry)
@@ -153,29 +218,47 @@ def main() -> int:
         template = fh.read()
 
     pending = []
+    stale: list[str] = []
     for name, cfg in sorted(registry["repos"].items()):
         if cfg.get("project") not in (9, 11):
             continue
         if args.repo and name not in args.repo:
             continue
-        if has_caller(name) or has_open_pr(name):
+        if has_open_pr(name):
             continue
-        pending.append((name, cfg["project"], cfg.get("area")))
+        state = caller_state(name, template)
+        if state == "current":
+            continue
+        wanted = {"missing"} if not (args.repoint or args.all) else \
+                 {"alias", "drift"} if args.repoint else {"missing", "alias", "drift"}
+        if state not in wanted:
+            stale.append(f"{name} ({state})")
+            continue
+        pending.append((name, cfg["project"], cfg.get("area"), state))
 
     if not pending:
-        print("Every registered repo already has the caller workflow.")
+        print("Every registered repo has the current caller workflow.")
+        if stale:
+            print(f"{len(stale)} differ from the template:")
+            for entry in stale:
+                print(f"  {entry}")
+            print("Re-run with --repoint to update them.")
         return 0
 
-    for name, project, area in pending:
+    for name, project, area, state in pending:
+        verb = "enroll" if state == "missing" else "repoint"
         if not args.apply:
-            print(f"would enroll {name:<28} -> #{project} / {area}")
+            print(f"would {verb} {name:<28} -> #{project} / {area}")
             continue
-        print(f"enrolling {name} -> #{project} / {area} ... ", end="", flush=True)
-        err = enroll(name, project, area, template, args.issue)
+        print(f"{verb}ing {name} -> #{project} / {area} ... ", end="", flush=True)
+        err = enroll(name, project, area, template, args.issue, state)
         print(err or "done")
 
     if not args.apply:
         print(f"\n{len(pending)} repo(s) pending. Re-run with --apply to open the PRs.")
+    if stale:
+        print(f"{len(stale)} more differ from the template (--repoint): "
+              f"{', '.join(stale)}")
     return 0
 
 
