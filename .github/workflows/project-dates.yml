@@ -20,6 +20,10 @@ jobs:
             // when GitHub rejects updateProjectV2ItemFieldValue for issue-type items.
             // "End date" has no org issue field equivalent so endIssueFieldId is null;
             // updateProjectV2ItemFieldValue handles it directly.
+            // Only issues are processed. Boards also hold pull-request items, whose
+            // `content` carries no issue id: one of them made setDate's fallback throw,
+            // and the throw was unhandled, so a single PR item killed the whole run and
+            // every remaining item on both boards went unsynced (2026-09-02 to 09-03).
             // closedToDone: safety net — a closed issue whose Status is not Done is
             // flipped to Done (project 9 only; Done there means deployed, and issues
             // close at deploy: on merge for deploy-on-merge repos, from cd.yml when
@@ -86,6 +90,7 @@ jobs:
                               }
                             }
                             content {
+                              __typename
                               ... on Issue {
                                 state
                                 issueFieldValues(first: 20) {
@@ -183,55 +188,64 @@ jobs:
               const backlogId = options['Backlog'] ?? null;
 
               let updates = 0;
+              let skipped = 0;
+              let failed = 0;
               for (const it of items) {
                 if (it.isArchived) continue;
-                const fvs = it.fieldValues?.nodes ?? [];
-                let status = fvs.find((n) => n.field?.id === cfg.statusFieldId)?.name ?? null;
-                const startDate = getDateValue(it, cfg.startDateFieldId, cfg.startIssueFieldId);
-                const endDate = getDateValue(it, cfg.endDateFieldId, cfg.endIssueFieldId);
+                if (it.content?.__typename !== 'Issue') { skipped++; continue; }
+                try {
+                  const fvs = it.fieldValues?.nodes ?? [];
+                  let status = fvs.find((n) => n.field?.id === cfg.statusFieldId)?.name ?? null;
+                  const startDate = getDateValue(it, cfg.startDateFieldId, cfg.startIssueFieldId);
+                  const endDate = getDateValue(it, cfg.endDateFieldId, cfg.endIssueFieldId);
 
-                if (backlogId && !status && it.content?.state === 'OPEN') {
-                  await github.graphql(
-                    `mutation ($project: ID!, $item: ID!, $field: ID!, $option: String!) {
-                      updateProjectV2ItemFieldValue(input: {
-                        projectId: $project, itemId: $item, fieldId: $field,
-                        value: { singleSelectOptionId: $option }
-                      }) { projectV2Item { id } }
-                    }`,
-                    { project: cfg.projectId, item: it.id, field: cfg.statusFieldId, option: backlogId }
-                  );
-                  core.info(`project=${cfg.number} item=${it.id} statusless open issue → Backlog`);
-                  status = 'Backlog';
-                  updates++;
-                }
+                  if (backlogId && !status && it.content?.state === 'OPEN') {
+                    await github.graphql(
+                      `mutation ($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+                        updateProjectV2ItemFieldValue(input: {
+                          projectId: $project, itemId: $item, fieldId: $field,
+                          value: { singleSelectOptionId: $option }
+                        }) { projectV2Item { id } }
+                      }`,
+                      { project: cfg.projectId, item: it.id, field: cfg.statusFieldId, option: backlogId }
+                    );
+                    core.info(`project=${cfg.number} item=${it.id} statusless open issue → Backlog`);
+                    status = 'Backlog';
+                    updates++;
+                  }
 
-                if (doneId && it.content?.state === 'CLOSED' && status !== STATUS_DONE) {
-                  await github.graphql(
-                    `mutation ($project: ID!, $item: ID!, $field: ID!, $option: String!) {
-                      updateProjectV2ItemFieldValue(input: {
-                        projectId: $project, itemId: $item, fieldId: $field,
-                        value: { singleSelectOptionId: $option }
-                      }) { projectV2Item { id } }
-                    }`,
-                    { project: cfg.projectId, item: it.id, field: cfg.statusFieldId, option: doneId }
-                  );
-                  core.info(`project=${cfg.number} item=${it.id} closed issue: status ${status} → ${STATUS_DONE}`);
-                  status = STATUS_DONE;
-                  updates++;
-                }
+                  if (doneId && it.content?.state === 'CLOSED' && status !== STATUS_DONE) {
+                    await github.graphql(
+                      `mutation ($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+                        updateProjectV2ItemFieldValue(input: {
+                          projectId: $project, itemId: $item, fieldId: $field,
+                          value: { singleSelectOptionId: $option }
+                        }) { projectV2Item { id } }
+                      }`,
+                      { project: cfg.projectId, item: it.id, field: cfg.statusFieldId, option: doneId }
+                    );
+                    core.info(`project=${cfg.number} item=${it.id} closed issue: status ${status} → ${STATUS_DONE}`);
+                    status = STATUS_DONE;
+                    updates++;
+                  }
 
-                if (status === STATUS_IN_PROGRESS && !startDate) {
-                  await setDate(cfg.projectId, it.id, cfg.startDateFieldId, cfg.startIssueFieldId, today);
-                  core.info(`project=${cfg.number} item=${it.id} set start_date=${today}`);
-                  updates++;
-                }
-                if (status === STATUS_DONE && !endDate) {
-                  await setDate(cfg.projectId, it.id, cfg.endDateFieldId, cfg.endIssueFieldId, today);
-                  core.info(`project=${cfg.number} item=${it.id} set end_date=${today}`);
-                  updates++;
+                  if (status === STATUS_IN_PROGRESS && !startDate) {
+                    await setDate(cfg.projectId, it.id, cfg.startDateFieldId, cfg.startIssueFieldId, today);
+                    core.info(`project=${cfg.number} item=${it.id} set start_date=${today}`);
+                    updates++;
+                  }
+                  if (status === STATUS_DONE && !endDate) {
+                    await setDate(cfg.projectId, it.id, cfg.endDateFieldId, cfg.endIssueFieldId, today);
+                    core.info(`project=${cfg.number} item=${it.id} set end_date=${today}`);
+                    updates++;
+                  }
+                } catch (err) {
+                  // One unsyncable item must not blank the rest of the board.
+                  failed++;
+                  core.warning(`project=${cfg.number} item=${it.id}: ${err.message}`);
                 }
               }
-              core.info(`project=${cfg.number} updates=${updates}`);
+              core.info(`project=${cfg.number} updates=${updates} skipped=${skipped} failed=${failed}`);
               totalUpdates += updates;
             }
             core.info(`done updates=${totalUpdates}`);
