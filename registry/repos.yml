@@ -98,8 +98,6 @@ repos:
   github-workflows:           { project: 9, area: "Cross / Platform", platform: required }
   grafana:                    { project: 9, area: Infra, platform: required }
   innobot:                    { project: 9, area: "Cross / Platform", platform: required }
-  # has AGENTS.md but no pin yet; declared required so drift reports it
-  innoweb:                    { project: 9, area: "Cross / Platform", platform: required }
   k8s-infra:                  { project: 9, area: Infra, platform: required }
   rumi-api:                   { project: 9, area: Rumi, platform: required }
   rumi-app:                   { project: 9, area: Rumi, platform: required }
@@ -115,6 +113,11 @@ repos:
   engineering-platform:       { project: 9, area: "Cross / Platform", platform: exempt }
   fonia-integration:          { project: 9, area: Infra, platform: exempt }
   heats-detection:            { project: 9, area: Data, platform: exempt }
+  # AGENTS.md only, no pin: declared required on 2026-09-03 so the drift check would
+  # surface it, then undeclared on 2026-09-07 -- adopting the conventions here is not
+  # planned, and a standing error nobody intends to fix trains people to ignore the
+  # report. Flip back to `required` the day someone means to adopt them.
+  innoweb:                    { project: 9, area: "Cross / Platform", platform: exempt }
   # cross-cutting planning repo: Area comes from the issue's area label
   management:                 { project: 9, area: null, platform: exempt, require_label: true }
   mapa-pac:                   { project: 9, area: Data, platform: exempt }
@@ -127,8 +130,10 @@ repos:
   splash_ui:                  { project: 9, area: "Cross / Platform", platform: exempt }
   support-knowledge:          { project: 9, area: "Cross / Platform", platform: exempt }
   vo-connector:               { project: 9, area: Rumi, platform: exempt }
-  # created 2026-09-07; the coverage check caught it before anyone filed against it
-  whatsapp-templates:         { project: 9, area: CoWtrol, platform: exempt }
+  # created 2026-09-07; the coverage check caught it before anyone filed against it.
+  # Bootstrapped with the platform layer the same day, so it is a real consumer --
+  # the drift check's reverse direction caught the stale `exempt`.
+  whatsapp-templates:         { project: 9, area: CoWtrol, platform: required }
 
   # --- #11 Granja de Hardware (firmware) --------------------------------------
   cinta-test:       { project: 11, area: Taller, platform: exempt }

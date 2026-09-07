@@ -130,11 +130,6 @@
       "area": "Cross / Platform",
       "platform": "required"
     },
-    "innoweb": {
-      "project": 9,
-      "area": "Cross / Platform",
-      "platform": "required"
-    },
     "k8s-infra": {
       "project": 9,
       "area": "Infra",
@@ -200,6 +195,11 @@
       "area": "Data",
       "platform": "exempt"
     },
+    "innoweb": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
     "management": {
       "project": 9,
       "area": null,
@@ -259,7 +259,7 @@
     "whatsapp-templates": {
       "project": 9,
       "area": "CoWtrol",
-      "platform": "exempt"
+      "platform": "required"
     },
     "cinta-test": {
       "project": 11,
@@ -414,12 +414,12 @@
       "github-workflows",
       "grafana",
       "innobot",
-      "innoweb",
       "k8s-infra",
       "rumi-api",
       "rumi-app",
       "rumi-claude",
-      "rumia-agent"
+      "rumia-agent",
+      "whatsapp-templates"
     ]
   }
 }
