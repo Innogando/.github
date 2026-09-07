@@ -20,6 +20,8 @@
     "9": [
       "CoWtrol",
       "Rumi",
+      "Rumi PRO",
+      "Corni",
       "Data",
       "Infra",
       "Cross / Platform"
@@ -135,9 +137,8 @@
     },
     "andorra-integration": {
       "project": 9,
-      "area": "CoWtrol",
-      "platform": "exempt",
-      "confirm": true
+      "area": "Infra",
+      "platform": "exempt"
     },
     "asterisk": {
       "project": 9,
@@ -147,15 +148,12 @@
     "chirpstack-integration": {
       "project": 9,
       "area": "Infra",
-      "platform": "exempt",
-      "confirm": true
+      "platform": "exempt"
     },
     "corni-api": {
       "project": 9,
-      "area": "Cross / Platform",
-      "platform": "exempt",
-      "product": "corni",
-      "confirm": true
+      "area": "Corni",
+      "platform": "exempt"
     },
     "engineering-platform": {
       "project": 9,
@@ -165,8 +163,7 @@
     "fonia-integration": {
       "project": 9,
       "area": "Infra",
-      "platform": "exempt",
-      "confirm": true
+      "platform": "exempt"
     },
     "heats-detection": {
       "project": 9,
@@ -199,24 +196,15 @@
       "area": "Rumi",
       "platform": "exempt"
     },
-    "rumi-knowledge": {
-      "project": 9,
-      "area": "Rumi",
-      "platform": "exempt",
-      "confirm": true
-    },
     "rumi-pro-api": {
       "project": 9,
-      "area": "Rumi",
-      "platform": "exempt",
-      "product": "rumi-pro",
-      "confirm": true
+      "area": "Rumi PRO",
+      "platform": "exempt"
     },
     "sigpac": {
       "project": 9,
-      "area": "Rumi",
-      "platform": "exempt",
-      "confirm": true
+      "area": "Data",
+      "platform": "exempt"
     },
     "splash-api": {
       "project": 9,
@@ -324,10 +312,10 @@
       ".github": "Cross / Platform",
       "Rumi-Gps-Utilities": "Rumi",
       "airflow": "Data",
-      "andorra-integration": "CoWtrol",
+      "andorra-integration": "Infra",
       "asterisk": "Infra",
       "chirpstack-integration": "Infra",
-      "corni-api": "Cross / Platform",
+      "corni-api": "Corni",
       "cowtrol": "CoWtrol",
       "cowtrol-api": "CoWtrol",
       "engineering-platform": "Cross / Platform",
@@ -344,10 +332,9 @@
       "rumi-api": "Rumi",
       "rumi-app": "Rumi",
       "rumi-claude": "Cross / Platform",
-      "rumi-knowledge": "Rumi",
-      "rumi-pro-api": "Rumi",
+      "rumi-pro-api": "Rumi PRO",
       "rumia-agent": "Cross / Platform",
-      "sigpac": "Rumi",
+      "sigpac": "Data",
       "splash-api": "Cross / Platform",
       "splash_ui": "Cross / Platform",
       "support-knowledge": "Cross / Platform",

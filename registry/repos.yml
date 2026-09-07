@@ -33,12 +33,19 @@ projects:
     scope: firmware
     default_priority: P1
 
-# Area names only. Option ids are resolved by name at run time and never stored here:
-# editing a single-select field regenerates every option id (learned 2026-09-01, see
-# project-dates.yml), and the two boards happen to reuse the same id strings for
-# different names -- 8f3c6346 is CoWtrol on #9 but Rumi on #11.
+# Area names only. Option ids are resolved by name at run time and never stored here.
+#
+# Two reasons. First, the two boards reuse the same id strings for different names --
+# 8f3c6346 is CoWtrol on #9 but Rumi on #11 -- so an id without its project means
+# nothing. Second, `updateProjectV2Field` regenerates every option id AND clears every
+# item's value when the options are passed without their ids. Passing each existing
+# option WITH its id keeps both the ids and the values; that is the only safe way to add
+# an option to a populated field, and it is how "Rumi PRO" and "Corni" were added on
+# 2026-09-07 without touching 1317 existing values. (Verified on a throwaway project
+# first: the id-less form loses the data. This corrects the blanket "editing a
+# single-select regenerates every option id" note in project-dates.yml.)
 areas:
-  9:  [CoWtrol, Rumi, Data, Infra, "Cross / Platform"]
+  9:  [CoWtrol, Rumi, "Rumi PRO", Corni, Data, Infra, "Cross / Platform"]
   11: [Rumi, "Rumi PRO", Corni, Taller, "Hw Operations", Porci, Firmware, "Rumi Dairy"]
 
 # An issue label overrides the repo's default Area. First match in this order wins.
@@ -80,15 +87,13 @@ repos:
   rumia-agent:                { project: 9, area: "Cross / Platform", platform: required }
   # this repo: org templates, reusable workflows and this registry
   ".github":                  { project: 9, area: "Cross / Platform", platform: exempt }
-  andorra-integration:        { project: 9, area: CoWtrol, platform: exempt, confirm: true }
+  andorra-integration:        { project: 9, area: Infra, platform: exempt }
   asterisk:                   { project: 9, area: Infra, platform: exempt }
-  # board history is CoWtrol 2 / Infra 1
-  chirpstack-integration:     { project: 9, area: Infra, platform: exempt, confirm: true }
-  # no Corni Area on #9; grouped via product
-  corni-api:                  { project: 9, area: "Cross / Platform", platform: exempt, product: corni, confirm: true }
+  chirpstack-integration:     { project: 9, area: Infra, platform: exempt }
+  corni-api:                  { project: 9, area: Corni, platform: exempt }
   # is the platform; carries no pin of its own
   engineering-platform:       { project: 9, area: "Cross / Platform", platform: exempt }
-  fonia-integration:          { project: 9, area: Infra, platform: exempt, confirm: true }
+  fonia-integration:          { project: 9, area: Infra, platform: exempt }
   heats-detection:            { project: 9, area: Data, platform: exempt }
   # cross-cutting planning repo: Area comes from the issue's area label
   management:                 { project: 9, area: null, platform: exempt, require_label: true }
@@ -96,10 +101,8 @@ repos:
   mikrotik-programer:         { project: 9, area: Infra, platform: exempt }
   pagosdeizcala-integration:  { project: 9, area: Rumi, platform: exempt }
   Rumi-Gps-Utilities:         { project: 9, area: Rumi, platform: exempt }
-  rumi-knowledge:             { project: 9, area: Rumi, platform: exempt, confirm: true }
-  # no Rumi PRO Area on #9; grouped under Rumi via product
-  rumi-pro-api:               { project: 9, area: Rumi, platform: exempt, product: rumi-pro, confirm: true }
-  sigpac:                     { project: 9, area: Rumi, platform: exempt, confirm: true }
+  rumi-pro-api:               { project: 9, area: "Rumi PRO", platform: exempt }
+  sigpac:                     { project: 9, area: Data, platform: exempt }
   splash-api:                 { project: 9, area: "Cross / Platform", platform: exempt }
   splash_ui:                  { project: 9, area: "Cross / Platform", platform: exempt }
   support-knowledge:          { project: 9, area: "Cross / Platform", platform: exempt }

@@ -50,15 +50,32 @@ def test_label_overrides_the_repo_default():
 
 
 def test_label_is_ignored_when_the_area_is_not_on_that_board():
-    """`rumi pro` names an Area that only project 11 has."""
-    d = reg.resolve(REGISTRY, "rumi-api", ["rumi pro"])
-    assert (d.project, d.area, d.from_label) == (9, "Rumi", False)
+    """`data` names an Area only project 9 has, so it does nothing on #11.
+
+    This used to be asserted with `rumi pro` on a #9 repo. Once "Rumi PRO" was
+    added to #9 (2026-09-07) that stopped being an example of the rule, so the
+    rule is now pinned from the other side.
+    """
+    d = reg.resolve(REGISTRY, "rumi-craft", ["data"])
+    assert (d.project, d.area, d.from_label) == (11, "Firmware", False)
 
 
 def test_rumi_pro_label_works_on_the_hardware_board():
     """Dead before the registry: the label existed only in the one excluded repo."""
     d = reg.resolve(REGISTRY, "rumi-pro", ["rumi pro"])
     assert (d.project, d.area, d.from_label) == (11, "Rumi PRO", True)
+
+
+def test_rumi_pro_label_also_works_on_the_software_board():
+    """Consequence of adding "Rumi PRO" to #9: the override now applies there too."""
+    d = reg.resolve(REGISTRY, "rumi-api", ["rumi pro"])
+    assert (d.project, d.area, d.from_label) == (9, "Rumi PRO", True)
+
+
+def test_the_new_product_areas_are_reachable_as_repo_defaults():
+    for repo, area in [("rumi-pro-api", "Rumi PRO"), ("corni-api", "Corni")]:
+        d = reg.resolve(REGISTRY, repo)
+        assert (d.project, d.area) == (9, area), repo
 
 
 def test_label_precedence_is_declaration_order():
