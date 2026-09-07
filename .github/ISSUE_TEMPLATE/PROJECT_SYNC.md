@@ -38,7 +38,18 @@ Status semantics (automation-managed — [pr-review-status.yml](../workflows/pr-
 
 Both lists, and which repo gets which Area, live in one place: [`registry/repos.yml`](../../registry/repos.yml). Adding a repo or moving it between areas is a one-line change there.
 
-An area label on the issue (`cowtrol`, `cross / platform`, `data`, `infra`, `rumi`, `rumi pro`) overrides the repo's declared Area. Precedence is the order they appear in `label_overrides`, and a label is ignored when it names an Area that its board does not have — `rumi pro` therefore does nothing on #9. `label-sync.yml` creates these labels in every enrolled repo; until it ran they existed only in `management`, so the override was documented but not usable.
+An area label on the issue overrides the repo's declared Area. **Every Area on both boards has one**, and `registry/test_registry.py` fails if an Area is added without a label:
+
+| board | labels |
+|---|---|
+| #9 | `cowtrol` · `rumi` · `rumi pro` · `corni` · `data` · `infra` · `cross / platform` |
+| #11 | `rumi` · `rumi pro` · `corni` · `taller` · `hw operations` · `porci` · `firmware` · `rumi dairy` |
+
+Precedence is the order they appear in `label_overrides`, and the first six keep their original order so the documented precedence stays true.
+
+**A label never moves an issue between boards.** The board comes from the repo's registry entry and is never read from a label; a label only picks the Area within that repo's own board. A label naming an Area the board does not have is ignored and the repo default applies — `porci` does nothing on a software repo, `data` nothing on a hardware one.
+
+`label-sync.yml` creates each label only in the repos whose board has the Area it names, so `porci` never appears on a software repo. Until it first ran these labels existed only in `management`, so the override was documented but not usable anywhere else.
 
 `management` is the one repo with no default Area (`require_label: true`): an issue there without an area label is not added to the board at all.
 

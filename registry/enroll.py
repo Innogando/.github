@@ -147,6 +147,17 @@ def default_branch(repo: str) -> str | None:
     return out.strip() if code == 0 and out.strip() else None
 
 
+def has_commits(repo: str) -> bool:
+    """False for a repo with no branches yet.
+
+    `default_branch` reports the configured name even when the branch does not
+    exist, so an empty repo would take a pushed branch and then fail at
+    `gh pr create --base <that name>`, leaving the branch behind.
+    """
+    code, out, _ = run("gh", "api", f"repos/{ORG}/{repo}/branches", "--jq", "length")
+    return code == 0 and out.strip() not in ("", "0")
+
+
 def enroll(repo: str, project: int, area: str | None, template: str,
            issue: str | None = None, state: str = "missing") -> str | None:
     """Open the PR. Returns an error message, or None on success."""
@@ -221,6 +232,7 @@ def main() -> int:
 
     pending = []
     stale: list[str] = []
+    empty: list[str] = []
     for name, cfg in sorted(registry["repos"].items()):
         if cfg.get("project") not in (9, 11):
             continue
@@ -231,6 +243,9 @@ def main() -> int:
         state = caller_state(name, template)
         if state == "current":
             continue
+        if not has_commits(name):
+            empty.append(name)
+            continue
         wanted = {"missing"} if not (args.repoint or args.all) else \
                  {"alias", "drift"} if args.repoint else {"missing", "alias", "drift"}
         if state not in wanted:
@@ -238,6 +253,9 @@ def main() -> int:
             continue
         pending.append((name, cfg["project"], cfg.get("area"), state))
 
+    if empty:
+        print(f"{len(empty)} repo(s) have no commits yet, so there is no base branch to "
+              f"open a PR against: {', '.join(empty)}")
     if not pending:
         print("Every registered repo has the current caller workflow.")
         if stale:

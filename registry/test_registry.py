@@ -50,15 +50,32 @@ def test_label_overrides_the_repo_default():
 
 
 def test_label_is_ignored_when_the_area_is_not_on_that_board():
-    """`rumi pro` names an Area that only project 11 has."""
-    d = reg.resolve(REGISTRY, "rumi-api", ["rumi pro"])
-    assert (d.project, d.area, d.from_label) == (9, "Rumi", False)
+    """`data` names an Area only project 9 has, so it does nothing on #11.
+
+    This used to be asserted with `rumi pro` on a #9 repo. Once "Rumi PRO" was
+    added to #9 (2026-09-07) that stopped being an example of the rule, so the
+    rule is now pinned from the other side.
+    """
+    d = reg.resolve(REGISTRY, "rumi-craft", ["data"])
+    assert (d.project, d.area, d.from_label) == (11, "Firmware", False)
 
 
 def test_rumi_pro_label_works_on_the_hardware_board():
     """Dead before the registry: the label existed only in the one excluded repo."""
     d = reg.resolve(REGISTRY, "rumi-pro", ["rumi pro"])
     assert (d.project, d.area, d.from_label) == (11, "Rumi PRO", True)
+
+
+def test_rumi_pro_label_also_works_on_the_software_board():
+    """Consequence of adding "Rumi PRO" to #9: the override now applies there too."""
+    d = reg.resolve(REGISTRY, "rumi-api", ["rumi pro"])
+    assert (d.project, d.area, d.from_label) == (9, "Rumi PRO", True)
+
+
+def test_the_new_product_areas_are_reachable_as_repo_defaults():
+    for repo, area in [("rumi-pro-api", "Rumi PRO"), ("corni-api", "Corni")]:
+        d = reg.resolve(REGISTRY, repo)
+        assert (d.project, d.area) == (9, area), repo
 
 
 def test_label_precedence_is_declaration_order():
@@ -96,6 +113,36 @@ def test_every_label_override_carries_a_hex_colour():
     for label, _area, *colour in REGISTRY["label_overrides"]:
         assert colour and len(colour[0]) == 6, f"label {label!r} has no 6-digit colour"
         int(colour[0], 16)
+
+
+def test_every_area_on_every_board_is_reachable_by_label():
+    """Adding an Area without a label override fails here.
+
+    Without a label an Area can only be a repo default, so an issue in some other
+    repo cannot be tagged into it -- `Corni` was in exactly that state until the
+    `corni` label was added.
+    """
+    labelled = {area for _label, area, *_c in REGISTRY["label_overrides"]}
+    for project, areas in REGISTRY["areas"].items():
+        for area in areas:
+            assert area in labelled, f"#{project} area {area!r} has no label override"
+
+
+def test_a_label_never_moves_an_issue_between_boards():
+    """`project` comes from the repo, never from a label."""
+    for repo, cfg in REGISTRY["repos"].items():
+        home = cfg.get("project")
+        if home not in (9, 11):
+            continue
+        for label, _area, *_c in REGISTRY["label_overrides"]:
+            d = reg.resolve(REGISTRY, repo, [label])
+            if not d.skip:
+                assert d.project == home, f"{repo}: label {label!r} moved it to #{d.project}"
+
+
+def test_a_label_for_another_boards_area_is_ignored():
+    assert reg.resolve(REGISTRY, "rumi-craft", ["data"]).area == "Firmware"
+    assert reg.resolve(REGISTRY, "rumi-api", ["porci"]).area == "Rumi"
 
 
 def test_no_repo_is_both_registered_and_unlisted():

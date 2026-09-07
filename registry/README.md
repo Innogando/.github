@@ -51,10 +51,29 @@ case-sensitive `grep -qw`, so every issue opened there from 2026-05-06 was silen
 dropped from both boards. `validate.py` now rejects a name the organisation does not
 spell that way, and says what the canonical spelling is.
 
-**Option ids are never stored, only Area names.** Editing a single-select field
-regenerates every option id (learned 2026-09-01, recorded in `project-dates.yml`), and
-the two boards reuse the same id strings for different names — `8f3c6346` is CoWtrol
-on #9 and Rumi on #11. The workflow resolves ids by name on every run.
+**Option ids are never stored, only Area names.** The two boards reuse the same id
+strings for different names — `8f3c6346` is CoWtrol on #9 and Rumi on #11 — so an id
+without its project means nothing. The workflow resolves ids by name on every run.
+
+**Adding an Area option to a populated field.** `updateProjectV2Field` regenerates every
+option id *and clears every item's value* when the options are passed without their ids.
+Pass each existing option **with its `id`** and only the new one without, which keeps
+both the ids and the values:
+
+```graphql
+mutation {
+  updateProjectV2Field(input: { fieldId: "PVTSSF_…", singleSelectOptions: [
+    { id: "8f3c6346", name: "CoWtrol", color: YELLOW, description: "…" },
+    { name: "Brand New", color: RED, description: "…" }
+  ]}) { projectV2Field { ... on ProjectV2SingleSelectField { options { id name } } } }
+}
+```
+
+That is how `Rumi PRO` and `Corni` were added on 2026-09-07 without touching 1317
+existing values — verified on a throwaway project first, because the id-less form loses
+the data silently. Snapshot the values before trying it anyway. This corrects the
+blanket "editing a single-select regenerates every option id" note in
+`project-dates.yml`.
 
 **There is no catch-all default.** A repo in neither `repos` nor `unlisted_ok` fails
 the run and names this file. The old `*)` arm filed every unmapped repo under
