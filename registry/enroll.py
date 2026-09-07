@@ -50,6 +50,8 @@ here. Identical is also what lets `engineering-platform` distribute the file and
 conformance check it.
 
 Issues opened before this lands are unaffected; only newly opened issues are added.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 """
 
 LEDE = {
