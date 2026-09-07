@@ -32,15 +32,19 @@ only new issues stop being added.
 
 ## Checking a change
 
-```bash
-pip install pyyaml
+Only `export.py` needs PyYAML — it is the generator, and reads `repos.yml` itself.
+Everything else falls back to the generated `repos.json`, so the tools run on a bare
+Python:
 
+```bash
 python3 registry/test_registry.py                          # routing rules, no network
 python3 registry/validate.py                               # registry vs the live org
 python3 registry/resolve.py --repo cowtrol-api --labels '["infra"]'
 python3 registry/sync_labels.py    --dry-run               # area labels per repo
 python3 registry/platform_drift.py                         # declared vs actual adoption
 python3 registry/enroll.py                                 # repos missing the caller
+
+pip install pyyaml && python3 registry/export.py           # after editing repos.yml
 ```
 
 ## Why it is shaped this way

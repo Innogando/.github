@@ -14,11 +14,20 @@ issue quietly filed under Cross / Platform.
 from __future__ import annotations
 
 import os
+import json
 from typing import Any, Iterable, NamedTuple
 
-import yaml
+try:
+    import yaml
+except ImportError:                                  # pragma: no cover - env-dependent
+    yaml = None
 
-DEFAULT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "repos.yml")
+HERE = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_PATH = os.path.join(HERE, "repos.yml")
+#: Generated from repos.yml by export.py and kept in sync by registry-validate.yml.
+#: Read when PyYAML is missing, so `enroll.py` and friends work in a bare
+#: environment instead of dying on `ModuleNotFoundError: No module named 'yaml'`.
+JSON_PATH = os.path.join(HERE, "repos.json")
 
 
 class Decision(NamedTuple):
@@ -35,9 +44,45 @@ class Decision(NamedTuple):
     error: bool = False
 
 
+def _normalise(registry: dict[str, Any]) -> dict[str, Any]:
+    """Make a registry read from repos.json look like one read from repos.yml.
+
+    export.py stringifies the project keys (JSON object keys must be strings) and
+    writes label_overrides as objects rather than triples, so both differ from the
+    YAML shape the rest of this module expects.
+    """
+    for key in ("projects", "areas"):
+        block = registry.get(key)
+        if isinstance(block, dict):
+            registry[key] = {
+                (int(k) if str(k).isdigit() else k): v for k, v in block.items()
+            }
+    overrides = registry.get("label_overrides")
+    if overrides and isinstance(overrides[0], dict):
+        registry["label_overrides"] = [
+            [o["label"], o["area"], o.get("colour")] for o in overrides
+        ]
+    return registry
+
+
 def load(path: str = DEFAULT_PATH) -> dict[str, Any]:
-    with open(path, encoding="utf-8") as fh:
-        registry = yaml.safe_load(fh)
+    """The registry. Prefers repos.yml; falls back to the generated repos.json.
+
+    The YAML is the file people edit, so it is authoritative when readable. Without
+    PyYAML the generated JSON is equivalent -- registry-validate.yml fails if the
+    two drift -- and reading it keeps every tool here runnable with a bare Python.
+    """
+    if yaml is not None and os.path.exists(path):
+        with open(path, encoding="utf-8") as fh:
+            registry = yaml.safe_load(fh)
+    else:
+        if not os.path.exists(JSON_PATH):
+            raise ValueError(
+                f"cannot read {path}: PyYAML is not installed and there is no "
+                f"generated {JSON_PATH} to fall back to. `pip install pyyaml`."
+            )
+        with open(JSON_PATH, encoding="utf-8") as fh:
+            registry = _normalise(json.load(fh))
     if registry.get("schema") != 1:
         raise ValueError(f"{path}: unsupported schema {registry.get('schema')!r}")
     for key in ("projects", "areas", "label_overrides", "repos", "unlisted_ok"):

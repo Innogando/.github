@@ -71,6 +71,17 @@ def main() -> int:
     ap.add_argument("--check", action="store_true", help="do not write; fail if stale")
     args = ap.parse_args()
 
+    # This is the generator, so it must read the YAML source. registry.load() falls
+    # back to repos.json when PyYAML is missing, and comparing that against itself
+    # would make --check a tautology that always passes.
+    if reg.yaml is None:
+        print(
+            "::error::registry/export.py needs PyYAML: it compares repos.yml against "
+            "the generated repos.json, and without the source the check is vacuous. "
+            "`pip install pyyaml`."
+        )
+        return 2
+
     wanted = json.dumps(build(reg.load(args.registry)), indent=2, sort_keys=False) + "\n"
 
     if args.check:
