@@ -14,6 +14,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import registry as reg  # noqa: E402
 
+try:                                       # this file must run under bare python3
+    import pytest
+except ImportError:                        # pragma: no cover - env-dependent
+    pytest = None
+
+
+def _skip(reason: str) -> None:
+    """Skip under pytest; a plain return is the best a bare runner can do."""
+    if pytest is not None:
+        pytest.skip(reason)
+
 REGISTRY = reg.load()
 
 
@@ -145,6 +156,39 @@ def test_a_label_for_another_boards_area_is_ignored():
     assert reg.resolve(REGISTRY, "rumi-api", ["porci"]).area == "Rumi"
 
 
+def test_the_json_fallback_matches_the_yaml():
+    """The tools must run without PyYAML, and give the same answers.
+
+    repos.json is generated and CI-checked for staleness, so reading it when
+    PyYAML is missing is equivalent -- but only if the shape is normalised: export
+    stringifies the project keys and writes label_overrides as objects.
+    """
+    if reg.yaml is None:
+        _skip("PyYAML absent: only the fallback path is reachable")
+        return
+    saved = reg.yaml
+    try:
+        reg.yaml = None
+        fallback = reg.load()
+    finally:
+        reg.yaml = saved
+
+    assert set(fallback["areas"]) == set(REGISTRY["areas"])
+    for project, areas in REGISTRY["areas"].items():
+        assert fallback["areas"][project] == areas, project
+    assert [list(o) for o in fallback["label_overrides"]] == [
+        list(o) for o in REGISTRY["label_overrides"]
+    ]
+    assert fallback["repos"] == REGISTRY["repos"]
+
+    labels = [o[0] for o in REGISTRY["label_overrides"]]
+    for repo in REGISTRY["repos"]:
+        for label_set in [[]] + [[lbl] for lbl in labels]:
+            assert reg.resolve(fallback, repo, label_set) == reg.resolve(
+                REGISTRY, repo, label_set
+            ), (repo, label_set)
+
+
 def test_no_repo_is_both_registered_and_unlisted():
     assert not (set(REGISTRY["repos"]) & set(REGISTRY["unlisted_ok"]))
 
@@ -166,5 +210,10 @@ if __name__ == "__main__":
         except AssertionError as exc:
             failures += 1
             print(f"FAIL  {fname}: {exc}")
+        except BaseException as exc:                       # pytest.skip raises Skipped
+            if type(exc).__name__ == "Skipped":
+                print(f"skip  {fname}: {exc}")
+            else:
+                raise
     print(f"\n{failures} failure(s)")
     sys.exit(1 if failures else 0)
