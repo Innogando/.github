@@ -12,9 +12,18 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import pytest  # noqa: E402
-
 import registry as reg  # noqa: E402
+
+try:                                       # this file must run under bare python3
+    import pytest
+except ImportError:                        # pragma: no cover - env-dependent
+    pytest = None
+
+
+def _skip(reason: str) -> None:
+    """Skip under pytest; a plain return is the best a bare runner can do."""
+    if pytest is not None:
+        pytest.skip(reason)
 
 REGISTRY = reg.load()
 
@@ -155,7 +164,8 @@ def test_the_json_fallback_matches_the_yaml():
     stringifies the project keys and writes label_overrides as objects.
     """
     if reg.yaml is None:
-        pytest.skip("PyYAML absent: only the fallback path is reachable")
+        _skip("PyYAML absent: only the fallback path is reachable")
+        return
     saved = reg.yaml
     try:
         reg.yaml = None
