@@ -115,6 +115,36 @@ def test_every_label_override_carries_a_hex_colour():
         int(colour[0], 16)
 
 
+def test_every_area_on_every_board_is_reachable_by_label():
+    """Adding an Area without a label override fails here.
+
+    Without a label an Area can only be a repo default, so an issue in some other
+    repo cannot be tagged into it -- `Corni` was in exactly that state until the
+    `corni` label was added.
+    """
+    labelled = {area for _label, area, *_c in REGISTRY["label_overrides"]}
+    for project, areas in REGISTRY["areas"].items():
+        for area in areas:
+            assert area in labelled, f"#{project} area {area!r} has no label override"
+
+
+def test_a_label_never_moves_an_issue_between_boards():
+    """`project` comes from the repo, never from a label."""
+    for repo, cfg in REGISTRY["repos"].items():
+        home = cfg.get("project")
+        if home not in (9, 11):
+            continue
+        for label, _area, *_c in REGISTRY["label_overrides"]:
+            d = reg.resolve(REGISTRY, repo, [label])
+            if not d.skip:
+                assert d.project == home, f"{repo}: label {label!r} moved it to #{d.project}"
+
+
+def test_a_label_for_another_boards_area_is_ignored():
+    assert reg.resolve(REGISTRY, "rumi-craft", ["data"]).area == "Firmware"
+    assert reg.resolve(REGISTRY, "rumi-api", ["porci"]).area == "Rumi"
+
+
 def test_no_repo_is_both_registered_and_unlisted():
     assert not (set(REGISTRY["repos"]) & set(REGISTRY["unlisted_ok"]))
 

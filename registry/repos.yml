@@ -49,9 +49,23 @@ areas:
   11: [Rumi, "Rumi PRO", Corni, Taller, "Hw Operations", Porci, Firmware, "Rumi Dairy"]
 
 # An issue label overrides the repo's default Area. First match in this order wins.
-# The label must name an Area that exists on that issue's project, or it is ignored.
-# label-sync.yml creates these labels (name, Area, colour) in every enrolled repo, so
-# the override actually works -- before the registry they existed only in `management`.
+#
+# A label only ever picks an Area *within the repo's own board*: `project` comes from
+# the repo's registry entry and is never read from a label, so no label can move an
+# issue between boards. A label naming an Area that board does not have is ignored and
+# the repo default applies -- `data` does nothing on a #11 repo, `porci` nothing on #9.
+#
+# The old hardware workflow did the opposite: `|| [ "$HAS_RUMI_PRO" = "true" ]` pulled
+# any repo's issue onto #11 if it carried `rumi pro`. That never ran (the label existed
+# only in `management`, which the same workflow excluded), and repo-determines-board is
+# the intended rule.
+#
+# Every Area on both boards is reachable by label; test_registry.py enforces that, so
+# adding an Area without a label fails CI. The first six keep their original order
+# because PROJECT_SYNC.md documents that precedence.
+#
+# label-sync.yml creates these labels (name, Area, colour) in each repo whose board has
+# the named Area -- so `porci` never appears on a software repo.
 label_overrides:
   - ["cowtrol",          "CoWtrol",          "15eb55"]
   - ["cross / platform", "Cross / Platform", "2c3f20"]
@@ -59,6 +73,12 @@ label_overrides:
   - ["infra",            "Infra",            "0d94f7"]
   - ["rumi",             "Rumi",             "9d8804"]
   - ["rumi pro",         "Rumi PRO",         "8d969e"]
+  - ["corni",            "Corni",            "d93f0b"]
+  - ["firmware",         "Firmware",         "006b75"]
+  - ["taller",           "Taller",           "5319e7"]
+  - ["porci",            "Porci",            "e99695"]
+  - ["rumi dairy",       "Rumi Dairy",       "0e8a16"]
+  - ["hw operations",    "Hw Operations",    "fbca04"]
 
 # Per-repo routing and platform adoption.
 #
@@ -107,6 +127,8 @@ repos:
   splash_ui:                  { project: 9, area: "Cross / Platform", platform: exempt }
   support-knowledge:          { project: 9, area: "Cross / Platform", platform: exempt }
   vo-connector:               { project: 9, area: Rumi, platform: exempt }
+  # created 2026-09-07; the coverage check caught it before anyone filed against it
+  whatsapp-templates:         { project: 9, area: CoWtrol, platform: exempt }
 
   # --- #11 Granja de Hardware (firmware) --------------------------------------
   cinta-test:       { project: 11, area: Taller, platform: exempt }

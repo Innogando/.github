@@ -67,6 +67,36 @@
       "label": "rumi pro",
       "area": "Rumi PRO",
       "colour": "8d969e"
+    },
+    {
+      "label": "corni",
+      "area": "Corni",
+      "colour": "d93f0b"
+    },
+    {
+      "label": "firmware",
+      "area": "Firmware",
+      "colour": "006b75"
+    },
+    {
+      "label": "taller",
+      "area": "Taller",
+      "colour": "5319e7"
+    },
+    {
+      "label": "porci",
+      "area": "Porci",
+      "colour": "e99695"
+    },
+    {
+      "label": "rumi dairy",
+      "area": "Rumi Dairy",
+      "colour": "0e8a16"
+    },
+    {
+      "label": "hw operations",
+      "area": "Hw Operations",
+      "colour": "fbca04"
     }
   ],
   "repos": {
@@ -226,6 +256,11 @@
       "area": "Rumi",
       "platform": "exempt"
     },
+    "whatsapp-templates": {
+      "project": 9,
+      "area": "CoWtrol",
+      "platform": "exempt"
+    },
     "cinta-test": {
       "project": 11,
       "area": "Taller",
@@ -338,7 +373,8 @@
       "splash-api": "Cross / Platform",
       "splash_ui": "Cross / Platform",
       "support-knowledge": "Cross / Platform",
-      "vo-connector": "Rumi"
+      "vo-connector": "Rumi",
+      "whatsapp-templates": "CoWtrol"
     },
     "hw_repo_area": {
       "Porci": "Porci",
