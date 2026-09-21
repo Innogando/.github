@@ -150,6 +150,11 @@
       "area": "Cross / Platform",
       "platform": "required"
     },
+    "rumi-mcp": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "required"
+    },
     "rumia-agent": {
       "project": 9,
       "area": "Cross / Platform",
@@ -367,6 +372,7 @@
       "rumi-api": "Rumi",
       "rumi-app": "Rumi",
       "rumi-claude": "Cross / Platform",
+      "rumi-mcp": "Rumi",
       "rumi-pro-api": "Rumi PRO",
       "rumia-agent": "Cross / Platform",
       "sigpac": "Data",
@@ -418,6 +424,7 @@
       "rumi-api",
       "rumi-app",
       "rumi-claude",
+      "rumi-mcp",
       "rumia-agent",
       "whatsapp-templates"
     ]

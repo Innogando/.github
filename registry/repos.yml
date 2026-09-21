@@ -102,6 +102,7 @@ repos:
   rumi-api:                   { project: 9, area: Rumi, platform: required }
   rumi-app:                   { project: 9, area: Rumi, platform: required }
   rumi-claude:                { project: 9, area: "Cross / Platform", platform: required }
+  rumi-mcp:                   { project: 9, area: Rumi, platform: required }
   rumia-agent:                { project: 9, area: "Cross / Platform", platform: required }
   # this repo: org templates, reusable workflows and this registry
   ".github":                  { project: 9, area: "Cross / Platform", platform: exempt }
