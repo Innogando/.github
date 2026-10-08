@@ -89,7 +89,7 @@ def area_options(project: int) -> set[str]:
         "-F", f"org={ORG}", "-F", f"number={project}",
     )
     field = data["data"]["organization"]["projectV2"]["field"]
-    return {o["name"] for o in (field or {}).get("options", [])}
+    return {option["name"] for option in (field or {}).get("options", [])}
 
 
 def issues_since(repo: str, since: str) -> int:

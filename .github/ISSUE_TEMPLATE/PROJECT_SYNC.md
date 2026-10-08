@@ -60,13 +60,24 @@ Repo names in the registry are matched exactly. `registry-validate.yml` rejects 
 ## Issue types and labels
 
 - **Objective** — `type: Objective` in [objective.yml](objective.yml); label `objective`.
-- **Support** — no template in this repo. The intake form lives in a separate app that creates issues via API with the `support` label; the workflow then sets the org Issue Type **Support** automatically.
+- **Support** — [support.yml](support.yml) in this repo. Most Support issues today are created through the API by the CoWtrol app with the `support` label; the workflow then sets the org Issue Type **Support** automatically.
 - **Task** — default Issue Type applied by the workflow when no other label matches.
 - **Censo** — applied when the label `censo` is present.
 
 Issue types are defined at the **organization** level. The `type` string in YAML must match the org issue type name exactly (including casing). If validation fails after merge, rename the type in org settings or adjust the YAML to match.
 
-Project rules: every item should have **Priority**, **Area**, and **Assignee** on the board; do not start work unless status is **Ready** or **In Progress**.
+Project rules: every item should have **Area** and **Assignee** on the board. On #9, **Priority** is the org-level issue field (Urgent, High, Medium, Low), set on the issue itself rather than on the board; the board's own Priority field applies to #11 only. Do not start work unless status is **Ready** (it meets the [Definition of Ready](../../docs/definition-of-ready-and-done.md#definition-of-ready)) or **In Progress**.
+
+## Workflow labels (product repos)
+
+The product repos listed under `workflow_labels` in [`registry/repos.yml`](../../registry/repos.yml) carry the intake and agent labels, created by `label-sync.yml`:
+
+| Label | Meaning |
+|---|---|
+| `support` | A customer problem that needs engineering |
+| `triage` | Not Ready yet: needs triage against the Definition of Ready |
+| `agent-ready` | Meets the agent-ready bar. Set by a person, never by an agent |
+| `risk:low` · `risk:medium` · `risk:high` | How much review a change needs: tests/docs/copy ≤ 100 lines · application logic ≤ 300 lines · migrations, auth, billing, integrations, infra or over 300 lines |
 
 ## Milestones (quarterly objectives)
 

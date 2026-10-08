@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Create the area-override labels in every registered repo.
+"""Create the area-override labels in every registered repo, and the workflow labels
+in the product repos.
 
 The registry lets an issue label override its repo's default Area. That mechanism
 was dead before this script existed: the labels were only ever created in
@@ -9,6 +10,9 @@ in the one repo excluded from the hardware board.
 
 Each repo gets only the labels naming an Area its own board actually has, so a
 `rumi pro` label never appears on a software repo.
+
+The repos listed under `workflow_labels` also get the intake and agent labels
+(`support`, `triage`, `agent-ready`, `risk:*`) with their descriptions.
 
     sync_labels.py --dry-run          # print what would change
     sync_labels.py                    # apply
@@ -56,6 +60,12 @@ def main() -> int:
         for label, area, *colour in registry["label_overrides"]
     ]
 
+    workflow = registry.get("workflow_labels") or {}
+    workflow_repos = set(workflow.get("repos") or ())
+    workflow_labels = {
+        label: (colour, desc) for label, colour, desc in (workflow.get("labels") or [])
+    }
+
     targets = sorted(
         name for name, cfg in registry["repos"].items()
         if cfg.get("project") in (9, 11) and (not args.repo or name in args.repo)
@@ -67,15 +77,18 @@ def main() -> int:
         project = registry["repos"][repo]["project"]
         board_areas = set(registry["areas"][project] or ())
         wanted = {
-            label: colour for label, area, colour in overrides if area in board_areas
+            label: (colour, None)
+            for label, area, colour in overrides if area in board_areas
         }
+        if repo in workflow_repos:
+            wanted.update(workflow_labels)
         try:
             have = existing_labels(repo)
         except RuntimeError as exc:
             failures.append(str(exc))
             continue
 
-        for label, colour in sorted(wanted.items()):
+        for label, (colour, desc) in sorted(wanted.items()):
             if label in have and have[label] == colour.lower():
                 continue
             verb = "update" if label in have else "create"
@@ -83,11 +96,11 @@ def main() -> int:
             if args.dry_run:
                 continue
             # --force both creates and recolours, so one call covers either case.
-            proc = subprocess.run(
-                ["gh", "label", "create", label, "-R", f"{ORG}/{repo}",
-                 "--color", colour, "--force"],
-                capture_output=True, text=True,
-            )
+            cmd = ["gh", "label", "create", label, "-R", f"{ORG}/{repo}",
+                   "--color", colour, "--force"]
+            if desc:
+                cmd += ["--description", desc]
+            proc = subprocess.run(cmd, capture_output=True, text=True)
             if proc.returncode != 0:
                 failures.append(f"{repo}/{label}: {proc.stderr.strip()}")
             elif verb == "create":

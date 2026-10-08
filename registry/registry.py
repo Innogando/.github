@@ -60,7 +60,14 @@ def _normalise(registry: dict[str, Any]) -> dict[str, Any]:
     overrides = registry.get("label_overrides")
     if overrides and isinstance(overrides[0], dict):
         registry["label_overrides"] = [
-            [o["label"], o["area"], o.get("colour")] for o in overrides
+            [override["label"], override["area"], override.get("colour")]
+            for override in overrides
+        ]
+    workflow = registry.get("workflow_labels") or {}
+    labels = workflow.get("labels")
+    if labels and isinstance(labels[0], dict):
+        workflow["labels"] = [
+            [entry["label"], entry["colour"], entry["description"]] for entry in labels
         ]
     return registry
 

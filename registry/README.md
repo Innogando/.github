@@ -40,7 +40,7 @@ Python:
 python3 registry/test_registry.py                          # routing rules, no network
 python3 registry/validate.py                               # registry vs the live org
 python3 registry/resolve.py --repo cowtrol-api --labels '["infra"]'
-python3 registry/sync_labels.py    --dry-run               # area labels per repo
+python3 registry/sync_labels.py    --dry-run               # area + workflow labels per repo
 python3 registry/platform_drift.py                         # declared vs actual adoption
 python3 registry/enroll.py                                 # repos missing the caller
 
