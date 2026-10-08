@@ -12,3 +12,6 @@ contact_links:
   - name: How to write a good issue
     url: https://github.com/Innogando/engineering-platform/blob/main/context/issue-writing.md
     about: One page — what each field is for and which fields the agents read.
+  - name: When is an issue ready, and when is it done?
+    url: https://github.com/Innogando/.github/blob/main/docs/definition-of-ready-and-done.md
+    about: The Definition of Ready (including the agent-ready bar) and the Definition of Done.

@@ -25,7 +25,7 @@ body:
     id: done_when
     attributes:
       label: Done when
-      description: Binary checks. "Deployed" counts, "merged" does not (rumi-app deploys on Tuesdays).
+      description: Binary checks. "Deployed" counts, "merged" does not (rumi-app deploys on Tuesdays). See the Definition of Done in Innogando/.github docs/definition-of-ready-and-done.md.
       value: |
         - [ ] 
     validations:
