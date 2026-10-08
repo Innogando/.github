@@ -59,7 +59,7 @@ Repo names in the registry are matched exactly. `registry-validate.yml` rejects 
 ## Issue types and labels
 
 - **Objective** — `type: Objective` in [objective.yml](objective.yml); label `objective`.
-- **Support** — [support.yml](support.yml) in this repo. Most Support issues today are created through the API by the CoWtrol app (`POST /support/issues`) with the `support` label; the workflow then sets the org Issue Type **Support** automatically.
+- **Support** — [support.yml](support.yml) in this repo. Most Support issues today are created through the API by the CoWtrol app with the `support` label; the workflow then sets the org Issue Type **Support** automatically.
 - **Task** — default Issue Type applied by the workflow when no other label matches.
 - **Censo** — applied when the label `censo` is present.
 
