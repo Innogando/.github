@@ -130,6 +130,8 @@ repos:
   # is the platform; carries no pin of its own
   engineering-platform:       { project: 9, area: "Cross / Platform", platform: exempt }
   fonia-integration:          { project: 9, area: Infra, platform: exempt }
+  # created 2026-10-07; Area seeded from heats-detection, to confirm with its owner
+  calving-detection:          { project: 9, area: Data, platform: exempt, confirm: true }
   heats-detection:            { project: 9, area: Data, platform: exempt }
   # company knowledge meta-repo (ADR-0001 in the repo): knowledge and a generated
   # catalog, no product code, so it does not carry the platform layer
@@ -151,6 +153,8 @@ repos:
   splash_ui:                  { project: 9, area: "Cross / Platform", platform: exempt }
   support-knowledge:          { project: 9, area: "Cross / Platform", platform: exempt }
   vo-connector:               { project: 9, area: Rumi, platform: exempt }
+  # created 2026-09-24; farmer-facing assistant on Rumi, Area to confirm with its owner
+  virtual-farmers:            { project: 9, area: Rumi, platform: exempt, confirm: true }
   # created 2026-09-07; the coverage check caught it before anyone filed against it.
   # Bootstrapped with the platform layer the same day, so it is a real consumer --
   # the drift check's reverse direction caught the stale `exempt`.
@@ -188,6 +192,7 @@ unlisted_ok:
   - innogando-lib-kicad                # KiCad part library
   - Maquina-cortar-correas             # mechanical
   - Maquina-de-coser-automatica        # mechanical
+  - Maquinas-laser                     # mechanical (laser engraving machine manuals)
   - maquina-pegado-robot               # mechanical
   - Pataposte                          # mechanical
   - Taller-Innogando                   # workshop operations - not software or firmware

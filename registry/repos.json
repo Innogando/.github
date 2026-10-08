@@ -237,6 +237,12 @@
       "area": "Infra",
       "platform": "exempt"
     },
+    "calving-detection": {
+      "project": 9,
+      "area": "Data",
+      "platform": "exempt",
+      "confirm": true
+    },
     "heats-detection": {
       "project": 9,
       "area": "Data",
@@ -307,6 +313,12 @@
       "project": 9,
       "area": "Rumi",
       "platform": "exempt"
+    },
+    "virtual-farmers": {
+      "project": 9,
+      "area": "Rumi",
+      "platform": "exempt",
+      "confirm": true
     },
     "whatsapp-templates": {
       "project": 9,
@@ -389,6 +401,7 @@
     "innogando-lib-kicad",
     "Maquina-cortar-correas",
     "Maquina-de-coser-automatica",
+    "Maquinas-laser",
     "maquina-pegado-robot",
     "Pataposte",
     "Taller-Innogando",
@@ -401,6 +414,7 @@
       "airflow": "Data",
       "andorra-integration": "Infra",
       "asterisk": "Infra",
+      "calving-detection": "Data",
       "chirpstack-integration": "Infra",
       "corni-api": "Corni",
       "cowtrol": "CoWtrol",
@@ -427,6 +441,7 @@
       "splash-api": "Cross / Platform",
       "splash_ui": "Cross / Platform",
       "support-knowledge": "Cross / Platform",
+      "virtual-farmers": "Rumi",
       "vo-connector": "Rumi",
       "whatsapp-templates": "CoWtrol"
     },
