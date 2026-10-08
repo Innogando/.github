@@ -80,6 +80,23 @@ label_overrides:
   - ["rumi dairy",       "Rumi Dairy",       "0e8a16"]
   - ["hw operations",    "Hw Operations",    "fbca04"]
 
+# Labels the intake and agent workflow relies on (docs/definition-of-ready-and-done.md),
+# as [name, colour, description]. label-sync.yml creates them in every repo under
+# `repos`: the product repos, where support requests and agent work land. They do not
+# route anything; Area still comes from the repo entry and `label_overrides`.
+#
+# `support` keeps GitHub's default grey because cowtrol and rumi-app already carry it
+# that way, and the sync recolours labels that differ.
+workflow_labels:
+  repos: [airflow, cowtrol, cowtrol-api, rumi-api, rumi-app]
+  labels:
+    - ["support",     "ededed", "A customer problem that needs engineering"]
+    - ["triage",      "fbca04", "Not Ready yet: needs triage against the Definition of Ready"]
+    - ["agent-ready", "0e8a16", "Meets the agent-ready bar. Set by a person, never by an agent"]
+    - ["risk:low",    "c2e0c6", "Tests, docs, copy or i18n; 100 lines or fewer; no sensitive paths"]
+    - ["risk:medium", "fef2c0", "Application logic; 300 lines or fewer; no sensitive paths"]
+    - ["risk:high",   "f9d0c4", "Migrations, auth, billing, integrations, infra, or over 300 lines"]
+
 # Per-repo routing and platform adoption.
 #
 #   project        9 | 11 | none        none = issues stay off the boards

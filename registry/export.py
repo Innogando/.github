@@ -50,6 +50,14 @@ def build(registry: dict) -> dict:
             {"label": lbl, "area": area, "colour": (c[0] if c else None)}
             for lbl, area, *c in registry["label_overrides"]
         ],
+        "workflow_labels": {
+            "repos": list((registry.get("workflow_labels") or {}).get("repos") or []),
+            "labels": [
+                {"label": lbl, "colour": colour, "description": desc}
+                for lbl, colour, desc in
+                ((registry.get("workflow_labels") or {}).get("labels") or [])
+            ],
+        },
         "repos": repos,
         "unlisted_ok": list(registry.get("unlisted_ok") or []),
         "derived": {

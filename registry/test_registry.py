@@ -126,6 +126,29 @@ def test_every_label_override_carries_a_hex_colour():
         int(colour[0], 16)
 
 
+
+def test_every_workflow_label_repo_is_registered_on_a_board():
+    """label-sync.yml only visits registered #9/#11 repos; anything else is silently skipped."""
+    for repo in REGISTRY["workflow_labels"]["repos"]:
+        cfg = reg.entry(REGISTRY, repo)
+        assert cfg is not None, f"workflow_labels repo {repo!r} is not registered"
+        assert cfg.get("project") in (9, 11), f"{repo!r} is on no board"
+
+
+def test_every_workflow_label_has_a_hex_colour_and_a_description():
+    for label, colour, desc in REGISTRY["workflow_labels"]["labels"]:
+        assert len(colour) == 6, f"label {label!r} has no 6-digit colour"
+        int(colour, 16)
+        assert desc and len(desc) <= 100, f"label {label!r}: GitHub caps descriptions at 100 chars"
+
+
+def test_workflow_labels_never_shadow_an_area_label():
+    """An area label routes issues; a workflow label must never be mistaken for one."""
+    areas = {o[0] for o in REGISTRY["label_overrides"]}
+    names = [lbl for lbl, *_ in REGISTRY["workflow_labels"]["labels"]]
+    assert len(names) == len(set(names)), "duplicate workflow label"
+    assert not areas & set(names), areas & set(names)
+
 def test_every_area_on_every_board_is_reachable_by_label():
     """Adding an Area without a label override fails here.
 
@@ -180,6 +203,10 @@ def test_the_json_fallback_matches_the_yaml():
         list(o) for o in REGISTRY["label_overrides"]
     ]
     assert fallback["repos"] == REGISTRY["repos"]
+    assert fallback["workflow_labels"]["repos"] == REGISTRY["workflow_labels"]["repos"]
+    assert [list(o) for o in fallback["workflow_labels"]["labels"]] == [
+        list(o) for o in REGISTRY["workflow_labels"]["labels"]
+    ]
 
     labels = [o[0] for o in REGISTRY["label_overrides"]]
     for repo in REGISTRY["repos"]:

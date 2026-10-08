@@ -99,6 +99,47 @@
       "colour": "fbca04"
     }
   ],
+  "workflow_labels": {
+    "repos": [
+      "airflow",
+      "cowtrol",
+      "cowtrol-api",
+      "rumi-api",
+      "rumi-app"
+    ],
+    "labels": [
+      {
+        "label": "support",
+        "colour": "ededed",
+        "description": "A customer problem that needs engineering"
+      },
+      {
+        "label": "triage",
+        "colour": "fbca04",
+        "description": "Not Ready yet: needs triage against the Definition of Ready"
+      },
+      {
+        "label": "agent-ready",
+        "colour": "0e8a16",
+        "description": "Meets the agent-ready bar. Set by a person, never by an agent"
+      },
+      {
+        "label": "risk:low",
+        "colour": "c2e0c6",
+        "description": "Tests, docs, copy or i18n; 100 lines or fewer; no sensitive paths"
+      },
+      {
+        "label": "risk:medium",
+        "colour": "fef2c0",
+        "description": "Application logic; 300 lines or fewer; no sensitive paths"
+      },
+      {
+        "label": "risk:high",
+        "colour": "f9d0c4",
+        "description": "Migrations, auth, billing, integrations, infra, or over 300 lines"
+      }
+    ]
+  },
   "repos": {
     "airflow": {
       "project": 9,
