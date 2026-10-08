@@ -24,9 +24,10 @@ Status semantics (automation-managed — [pr-review-status.yml](../workflows/pr-
 
 | Status | Meaning |
 |---|---|
+| Ready | Meets the [Definition of Ready](../../docs/definition-of-ready-and-done.md#definition-of-ready). An issue that does not stays in Backlog |
 | In Progress | Being implemented; no PR yet (or the PR is a draft) |
 | Review | The PR is open/ready — and for rumi-app, also merged to `develop` awaiting the Tuesday release train |
-| Done | **Deployed / published, not merely merged.** Deploy-on-merge repos: at merge to `main` (the issue auto-closes). rumi-app: when the train ships (its `cd.yml` closes the shipped issues) |
+| Done | Meets the [Definition of Done](../../docs/definition-of-ready-and-done.md#definition-of-done): **deployed / published, not merely merged.** Deploy-on-merge repos: at merge to `main` (the issue auto-closes). rumi-app: when the train ships (its `cd.yml` closes the shipped issues) |
 
 **Priority (hardware project #11 only):** P0, P1, P2 (P0 = urgent / production impact; P1 = important; P2 = nice to have)
 

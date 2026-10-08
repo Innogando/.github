@@ -12,6 +12,7 @@ body:
     attributes:
       value: |
         Write in **English**. Describe the **problem** before the solution. Link issues as full URLs.
+        Work starts when the issue meets the [Definition of Ready](https://github.com/Innogando/.github/blob/main/docs/definition-of-ready-and-done.md).
   - type: textarea
     id: problem
     attributes:

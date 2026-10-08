@@ -14,6 +14,7 @@ body:
       value: |
         Write in **English**. Link other issues as **full URLs** (short `#123` does not resolve across repos).
         Never paste customer names, phone numbers or coordinates; use farm/animal **ids**.
+        Work starts when the issue meets the [Definition of Ready](https://github.com/Innogando/.github/blob/main/docs/definition-of-ready-and-done.md).
   - type: textarea
     id: observed
     attributes:
