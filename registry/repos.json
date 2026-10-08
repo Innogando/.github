@@ -105,7 +105,8 @@
       "cowtrol",
       "cowtrol-api",
       "rumi-api",
-      "rumi-app"
+      "rumi-app",
+      "rumi-mcp"
     ],
     "labels": [
       {

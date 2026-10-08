@@ -88,7 +88,7 @@ label_overrides:
 # `support` keeps GitHub's default grey because cowtrol and rumi-app already carry it
 # that way, and the sync recolours labels that differ.
 workflow_labels:
-  repos: [airflow, cowtrol, cowtrol-api, rumi-api, rumi-app]
+  repos: [airflow, cowtrol, cowtrol-api, rumi-api, rumi-app, rumi-mcp]
   labels:
     - ["support",     "ededed", "A customer problem that needs engineering"]
     - ["triage",      "fbca04", "Not Ready yet: needs triage against the Definition of Ready"]
