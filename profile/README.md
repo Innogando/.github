@@ -26,7 +26,7 @@
 
 ### [WHAT WE WORK ON]
 
-**Data from where there is no coverage.** Our collars work on mountain pastures, far from any mobile network. They send data over LoRaWAN, and Rumi PRO can also use LTE. They run on solar power for the full grazing season.
+**Data from where there is no coverage.** Our collars often work on mountain pastures, far from a mobile network. They send data over LoRaWAN, and Rumi PRO can also use LTE. They run on solar power for the full grazing season.
 
 **Behaviour from a sensor on the neck.** The collar knows when a cow eats, ruminates, walks or rests. A drop in rumination is often the first sign of illness. A change in activity can show heat or calving. We turn these signals into alerts, often before the farmer can see a symptom.
 
