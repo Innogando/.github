@@ -1,9 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./banner-dark.svg">
-  <img src="./banner-light.svg" alt="Innogando. From the field, for the field. Smart collars, virtual fences and herd data for livestock farmers." width="100%">
-</picture>
+<img src="./banner.webp" alt="Innogando. From the field, for the field. Location, health alerts and virtual fences for livestock farmers." width="100%">
 
 [![Website](https://img.shields.io/badge/Website-innogando.com-087F5B?style=flat-square&labelColor=EBEDF0)](https://innogando.com) [![LinkedIn](https://img.shields.io/badge/LinkedIn-innogando-087F5B?style=flat-square&labelColor=EBEDF0)](https://www.linkedin.com/company/innogando/) [![Contact](https://img.shields.io/badge/Contact-hola%40innogando.com-087F5B?style=flat-square&labelColor=EBEDF0)](mailto:hola@innogando.com)
 
