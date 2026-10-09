@@ -202,6 +202,11 @@
       "area": "Cross / Platform",
       "platform": "required"
     },
+    "agents": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "required"
+    },
     ".github": {
       "project": 9,
       "area": "Cross / Platform",
@@ -411,6 +416,7 @@
     "sw_repo_area": {
       ".github": "Cross / Platform",
       "Rumi-Gps-Utilities": "Rumi",
+      "agents": "Cross / Platform",
       "airflow": "Data",
       "andorra-integration": "Infra",
       "asterisk": "Infra",
@@ -477,6 +483,7 @@
       "management"
     ],
     "platform_required": [
+      "agents",
       "airflow",
       "cowtrol",
       "cowtrol-api",
