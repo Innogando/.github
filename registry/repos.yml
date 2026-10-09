@@ -121,6 +121,8 @@ repos:
   rumi-claude:                { project: 9, area: "Cross / Platform", platform: required }
   rumi-mcp:                   { project: 9, area: Rumi, platform: required }
   rumia-agent:                { project: 9, area: "Cross / Platform", platform: required }
+  # created 2026-10-09: runtime agents (role cards, Agent SDK runtime, evals), ADR-0005..0008
+  agents:                     { project: 9, area: "Cross / Platform", platform: required }
   # this repo: org templates, reusable workflows and this registry
   ".github":                  { project: 9, area: "Cross / Platform", platform: exempt }
   andorra-integration:        { project: 9, area: Infra, platform: exempt }
