@@ -1,353 +1,59 @@
 <div align="center">
 
-# **Innogando** 🐮🧡
-### *Creating welfare through livestock technology*
+<img src="./banner.webp" alt="Innogando. From the field, for the field. Location, health alerts and virtual fences for livestock farmers." width="100%">
 
-<br/>
-
-[![Website](https://img.shields.io/badge/🌐_Website-innogando.com-4CAF50?style=for-the-badge&logoColor=white)](https://innogando.com)
-[![Animals Monitored](https://img.shields.io/badge/🐄_Animals-30K+-2196F3?style=for-the-badge&logoColor=white)]()
-[![Active Farmers](https://img.shields.io/badge/👨‍🌾_Farmers-1K+-FF9800?style=for-the-badge&logoColor=white)]()
-[![Countries](https://img.shields.io/badge/🌍_Global-Expanding-9C27B0?style=for-the-badge&logoColor=white)]()
-
-<br/>
-
-**🚀 Smart technology for farmers who think about the future**
-
-<br/>
-
----
+[![Website](https://img.shields.io/badge/Website-innogando.com-087F5B?style=flat-square&labelColor=EBEDF0)](https://innogando.com) [![LinkedIn](https://img.shields.io/badge/LinkedIn-innogando-087F5B?style=flat-square&labelColor=EBEDF0)](https://www.linkedin.com/company/innogando/) [![Contact](https://img.shields.io/badge/Contact-hola%40innogando.com-087F5B?style=flat-square&labelColor=EBEDF0)](mailto:hola@innogando.com)
 
 </div>
-
-<br/>
-
-## 🌟 **Our Mission**
-
-<div align="left">
-
-> At **Innogando**, we develop *innovative technological solutions* to revolutionize traditional livestock farming. 
-> We combine **IoT**, **GPS**, **artificial intelligence**, and **mobile development** to create tools that improve 
-> **efficiency**, **sustainability**, and **animal welfare** in livestock operations.
-
-</div>
-
-<br/>
-
-## 🚀 **Technology Products**
 
 <div align="center">
 
-### 📱 **RUMI Ecosystem**
-*Our comprehensive livestock monitoring platform*
+> Innogando makes **Rumi**, a smart collar for cattle. It tells a farmer where each animal is and how each animal is doing, often on land with no mobile coverage. We build the full chain in house: the collar, its firmware, the radio network, the data platform, the models and the app.
 
-<br/>
+</div>
+
+<br>
 
 <table>
 <tr>
-<td align="center" width="33%">
-
-**🔋 RUMI Beef**
-<br/>
-*GPS collar with solar panel*
-<br/>
-*and 24/7 monitoring*
-
-</td>
-<td align="center" width="33%">
-
-**📊 RUMI Dairy**
-<br/>
-*Reproductive optimization with*
-<br/>
-*heat detection alerts*
-
-</td>
-<td align="center" width="33%">
-
-**📲 RUMI App**
-<br/>
-*Complete management*
-<br/>
-*from mobile devices*
-
-</td>
+<td align="center" width="33%"><h3>40K+</h3>animals wear a Rumi collar today</td>
+<td align="center" width="33%"><h3>3.5M+</h3>GPS positions every day</td>
+<td align="center" width="33%"><h3>1,500+</h3>farms use Rumi in the field</td>
 </tr>
 </table>
 
-</div>
+<br>
 
-<br/>
+### [WHAT WE WORK ON]
 
-### 🛠️ **Technology Stack**
+**Data from where there is no coverage.** Our collars often work on mountain pastures, far from a mobile network. They send data over LoRaWAN, and Rumi PRO can also use LTE. They run on solar power for the full grazing season.
 
-<div align="center">
+**Behaviour from a sensor on the neck.** The collar knows when a cow eats, ruminates, walks or rests. A drop in rumination is often the first sign of illness. A change in activity can show heat or calving. We turn these signals into alerts, often before the farmer can see a symptom.
 
-<table>
-<tr>
-<td align="center" width="25%">
+**Fences without posts.** With Rumi PRO, the farmer draws a fence on a map. When a cow comes near the line, her collar plays a sound. If she keeps walking, she gets a low-power correction. Most animals learn the boundary in 4 to 7 days.
 
-**🎨 Frontend**
-<br/>
-Flutter, Dart
-<br/>
-Mobile Development
+**Alerts a farmer can trust.** A farmer who gets false alarms stops reading them. Each alert we send must be worth a trip to the field.
 
-</td>
-<td align="center" width="25%">
+<br>
 
-**⚙️ Backend**
-<br/>
-Python, Cloud Computing
-<br/>
-Real-time Data Processing
+### [OPEN SOURCE]
 
-</td>
-<td align="center" width="25%">
+Most of our code is private. We keep public forks of the firmware libraries that our collars use, and we fix them there when we need to:
 
-**🔧 Hardware**
-<br/>
-IoT Devices, GPS Tracking
-<br/>
-Solar Power
+- **[ubxlib](https://github.com/Innogando/ubxlib):** u-blox libraries for GNSS and cellular modules.
+- **[usp_zephyr](https://github.com/Innogando/usp_zephyr):** Semtech's Unified Software Platform and LoRa Basics Modem on Zephyr.
+- **[LBM_Zephyr](https://github.com/Innogando/LBM_Zephyr):** LoRa Basics Modem integration in Zephyr OS.
 
-</td>
-<td align="center" width="25%">
+<br>
 
-**📈 Analytics**
-<br/>
-AI/ML, Predictive Algorithms
-<br/>
-Big Data
+### [JOIN US]
 
-</td>
-</tr>
-</table>
+Our code runs on 40,000 animals and on the phones of the farmers who look after them. If you want to work on that, write to us at [hola@innogando.com](mailto:hola@innogando.com).
 
-</div>
-
-<br/>
-
----
-
-<br/>
-
-## 💡 **Innovation that Makes an Impact**
+<img src="./divider.svg" width="100%" height="2" alt="">
 
 <div align="center">
 
-<table>
-<tr>
-<td align="center" width="33%">
-
-### 🌱 <strong>Sustainability</strong>
-<br/>
-✅ <strong>Optimized rotational grazing</strong> through geolocation
-<br/><br/>
-✅ <strong>Reduced antibiotic use</strong> with early detection
-<br/><br/>
-✅ <strong>Lower carbon footprint</strong> through operational efficiency
-
-</td>
-<td align="center" width="33%">
-
-### 🐮 <strong>Animal Welfare</strong>
-<br/>
-🔄 <strong>24/7 monitoring</strong> without manual intervention
-<br/><br/>
-⚡ <strong>Predictive alerts</strong> up to 48h before visible symptoms
-<br/><br/>
-🤖 <strong>Automatic detection</strong> of anomalous behaviors
-
-</td>
-<td align="center" width="33%">
-
-### 📊 <strong>Operational Efficiency</strong>
-<br/>
-⏱️ <strong>Management time reduced</strong> to 5 minutes daily
-<br/><br/>
-📍 <strong>Real-time GPS tracking</strong> without mobile coverage
-<br/><br/>
-🔔 <strong>Smart alerts</strong> to optimize resources
-
-</td>
-</tr>
-</table>
+<sub>Born in Galicia, Spain. Now expanding abroad.</sub>
 
 </div>
-
-<br/>
-
----
-
-<br/>
-
-## 🔧 **Open Source Technologies**
-
-<div align="center">
-
-*We collaborate with the tech community through open source projects*
-
-<br/>
-
-| 📦 **Repository** | 📝 **Description** | 🔧 **Stack** |
-|-------------------|---------------------|---------------|
-| [`github-workflows`](https://github.com/Innogando/github-workflows) | Reusable CI/CD Actions | `YAML` `DevOps` |
-| [`ubxlib`](https://github.com/Innogando/ubxlib) | Libraries for u-blox products | `C` `Embedded` |
-
-</div>
-
-<br/>
-
----
-
-<br/>
-
-## 🌍 **Global Impact**
-
-<div align="center">
-
-*Transforming livestock farming across continents*
-
-<br/>
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-### 🐄
-**30,000+**
-<br/>
-*Animals Monitored*
-
-</td>
-<td align="center" width="33%">
-
-### 👨‍🌾
-**1,000+**
-<br/>
-*Active Farmers*
-
-</td>
-<td align="center" width="33%">
-
-### 🌍
-**Global Presence**
-<br/>
-*Spain, Portugal, U.S. & expanding*
-
-</td>
-</tr>
-</table>
-
-</div>
-
-<br/>
-
----
-
-<br/>
-
-## 🤝 **Partnerships**
-
-<div align="center">
-
-*We work alongside leading organizations in the sector*
-
-<br/>
-
-| 🏢 **Organization** | 🎯 **Collaboration** |
-|---------------------|----------------------|
-| **COVAP** | Digitalization of the cooperative sector |
-| **ASAJA** | Support for professional farmers |
-| **Various cooperatives** | Regional implementation |
-
-</div>
-
-<br/>
-
----
-
-<br/>
-
-## 💻 **For Developers**
-
-<div align="left">
-
-### 🚀 **Contributing to our projects:**
-
-```bash
-# Clone workflows repository
-git clone https://github.com/Innogando/github-workflows.git
-
-# Explore our GitHub Actions
-cd github-workflows && ls -la
-```
-
-<br/>
-
-### 🛠️ **Technologies we use:**
-
-<table>
-<tr>
-<td width="50%">
-
-- **📱 Mobile**: Flutter, Dart
-- **⚙️ Backend**: Cloud Computing, Microservices
-- **🔧 IoT**: C/C++, Embedded Systems
-
-</td>
-<td width="50%">
-
-- **🚀 DevOps**: GitHub Actions, Docker, CI/CD
-- **📊 Data**: Analytics, Machine Learning
-- **☁️ Cloud**: Scalable Infrastructure
-
-</td>
-</tr>
-</table>
-
-</div>
-
-<br/>
-
----
-
-<br/>
-
-## 📞 **Contact**
-
-<div align="center">
-
-### 💬 **Interested in agtech technology?**
-
-*Let's connect and transform livestock farming together*
-
-<br/>
-
-[![Email](https://img.shields.io/badge/📧_Email-hola@innogando.com-EA4335?style=for-the-badge&logoColor=white)](mailto:hola@innogando.com)
-[![LinkedIn](https://img.shields.io/badge/💼_LinkedIn-innogando-0A66C2?style=for-the-badge&logoColor=white)](https://linkedin.com/company/innogando)
-[![Phone](https://img.shields.io/badge/📞_Phone-+34_982_89_20_08-25D366?style=for-the-badge&logoColor=white)](tel:+34982892008)
-[![Website](https://img.shields.io/badge/🌐_Website-innogando.com-4CAF50?style=for-the-badge&logoColor=white)](https://innogando.com)
-
-<br/>
-
-> *"From rural, for rural. Innovation that makes the difference."*
-
-<br/>
-
----
-
-<br/>
-
-<table>
-<tr>
-<td align="center">
-
-🌱 **Innogando** • *Technology that transforms livestock farming* • Spain 🇪🇸
-
-</td>
-</tr>
-</table>
-
-</div> 
