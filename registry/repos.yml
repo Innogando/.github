@@ -112,6 +112,7 @@ repos:
   airflow:                    { project: 9, area: Data, platform: required }
   cowtrol:                    { project: 9, area: CoWtrol, platform: required }
   cowtrol-api:                { project: 9, area: CoWtrol, platform: required }
+  finance:                    { project: 9, area: Data, platform: required }
   github-workflows:           { project: 9, area: "Cross / Platform", platform: required }
   grafana:                    { project: 9, area: Infra, platform: required }
   innobot:                    { project: 9, area: "Cross / Platform", platform: required }

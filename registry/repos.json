@@ -157,6 +157,11 @@
       "area": "CoWtrol",
       "platform": "required"
     },
+    "finance": {
+      "project": 9,
+      "area": "Data",
+      "platform": "required"
+    },
     "github-workflows": {
       "project": 9,
       "area": "Cross / Platform",
@@ -426,6 +431,7 @@
       "cowtrol": "CoWtrol",
       "cowtrol-api": "CoWtrol",
       "engineering-platform": "Cross / Platform",
+      "finance": "Data",
       "fonia-integration": "Infra",
       "github-workflows": "Cross / Platform",
       "grafana": "Infra",
@@ -487,6 +493,7 @@
       "airflow",
       "cowtrol",
       "cowtrol-api",
+      "finance",
       "github-workflows",
       "grafana",
       "innobot",
