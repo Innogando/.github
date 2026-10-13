@@ -126,6 +126,7 @@ repos:
   agents:                     { project: 9, area: "Cross / Platform", platform: required }
   # this repo: org templates, reusable workflows and this registry
   ".github":                  { project: 9, area: "Cross / Platform", platform: exempt }
+  alertmanager-asterisk-bridge: { project: 9, area: Infra, platform: exempt }
   andorra-integration:        { project: 9, area: Infra, platform: exempt }
   asterisk:                   { project: 9, area: Infra, platform: exempt }
   chirpstack-integration:     { project: 9, area: Infra, platform: exempt }
@@ -181,6 +182,7 @@ repos:
 # Active repos deliberately left out of the registry. Listed so that the
 # "every active repo is registered" check stays a real gate instead of noise.
 unlisted_ok:
+  - Altium-DEV                         # PCB design (Altium) - hardware files, like innogando-lib-kicad
   - app-trazabilidade                  # traceability product - out of scope
   - app-trazabilidade-backend          # traceability product - out of scope
   - app-trazabilidade-web              # traceability product - out of scope
@@ -189,6 +191,7 @@ unlisted_ok:
   - Biblioteca-Innogando               # document library
   - brazo-laser                        # mechanical
   - brazo-tests                        # mechanical
+  - demo-repository                   # GitHub demo template - not a product
   - Hardware-Operations-Supply-Chain   # hardware operations - not software or firmware
   - Impresora-3D-Bambu-A1              # mechanical
   - Impresora-3D-Prusa-MK3S            # mechanical

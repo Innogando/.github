@@ -217,6 +217,11 @@
       "area": "Cross / Platform",
       "platform": "exempt"
     },
+    "alertmanager-asterisk-bridge": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "exempt"
+    },
     "andorra-integration": {
       "project": 9,
       "area": "Infra",
@@ -397,6 +402,7 @@
     }
   },
   "unlisted_ok": [
+    "Altium-DEV",
     "app-trazabilidade",
     "app-trazabilidade-backend",
     "app-trazabilidade-web",
@@ -405,6 +411,7 @@
     "Biblioteca-Innogando",
     "brazo-laser",
     "brazo-tests",
+    "demo-repository",
     "Hardware-Operations-Supply-Chain",
     "Impresora-3D-Bambu-A1",
     "Impresora-3D-Prusa-MK3S",
@@ -423,6 +430,7 @@
       "Rumi-Gps-Utilities": "Rumi",
       "agents": "Cross / Platform",
       "airflow": "Data",
+      "alertmanager-asterisk-bridge": "Infra",
       "andorra-integration": "Infra",
       "asterisk": "Infra",
       "calving-detection": "Data",
