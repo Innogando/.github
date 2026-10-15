@@ -20,7 +20,7 @@ on:
 jobs:
   resolver-tests:
     name: Resolver tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install PyYAML if the runner lacks it
@@ -33,7 +33,7 @@ jobs:
 
   registry-vs-org:
     name: Registry vs organisation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: resolver-tests
     steps:
       - uses: actions/checkout@v4
