@@ -110,6 +110,7 @@ workflow_labels:
 repos:
   # --- #9 Granja de Rus (software) --------------------------------------------
   airflow:                    { project: 9, area: Data, platform: required }
+  coverage-planner:           { project: 9, area: Corni, platform: required }
   cowtrol:                    { project: 9, area: CoWtrol, platform: required }
   cowtrol-api:                { project: 9, area: CoWtrol, platform: required }
   finance:                    { project: 9, area: Data, platform: required }
