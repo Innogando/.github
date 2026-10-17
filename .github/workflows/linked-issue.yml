@@ -22,7 +22,7 @@ concurrency:
 jobs:
   linked-issue:
     name: Linked Issue
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Resolve linked issue

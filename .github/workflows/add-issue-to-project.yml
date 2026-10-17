@@ -19,7 +19,7 @@ on:
 
 jobs:
   add-and-set-fields:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the registry
         uses: actions/checkout@v4
