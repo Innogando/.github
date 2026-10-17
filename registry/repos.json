@@ -147,6 +147,11 @@
       "area": "Data",
       "platform": "required"
     },
+    "coverage-planner": {
+      "project": 9,
+      "area": "Corni",
+      "platform": "required"
+    },
     "cowtrol": {
       "project": 9,
       "area": "CoWtrol",
@@ -436,6 +441,7 @@
       "calving-detection": "Data",
       "chirpstack-integration": "Infra",
       "corni-api": "Corni",
+      "coverage-planner": "Corni",
       "cowtrol": "CoWtrol",
       "cowtrol-api": "CoWtrol",
       "engineering-platform": "Cross / Platform",
@@ -499,6 +505,7 @@
     "platform_required": [
       "agents",
       "airflow",
+      "coverage-planner",
       "cowtrol",
       "cowtrol-api",
       "finance",
