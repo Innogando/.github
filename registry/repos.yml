@@ -194,6 +194,7 @@ unlisted_ok:
   - brazo-tests                        # mechanical
   - demo-repository                   # GitHub demo template - not a product
   - Hardware-Operations-Supply-Chain   # hardware operations - not software or firmware
+  - hefesto-bench-cowtrol-api         # Hefesto benchmark mirror - eval output, not product work
   - Impresora-3D-Bambu-A1              # mechanical
   - Impresora-3D-Prusa-MK3S            # mechanical
   - innogando-lib-kicad                # KiCad part library
