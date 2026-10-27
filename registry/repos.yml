@@ -204,4 +204,5 @@ unlisted_ok:
   - maquina-pegado-robot               # mechanical
   - Pataposte                          # mechanical
   - Taller-Innogando                   # workshop operations - not software or firmware
+  - triage-sandbox                     # triage agent end-to-end tests - eval output, not product work
   - trazabilidad-wagyu                 # traceability product - out of scope
