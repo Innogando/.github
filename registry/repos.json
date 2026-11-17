@@ -147,6 +147,11 @@
       "area": "Data",
       "platform": "required"
     },
+    "budget": {
+      "project": 9,
+      "area": "Data",
+      "platform": "required"
+    },
     "coverage-planner": {
       "project": 9,
       "area": "Corni",
@@ -440,6 +445,7 @@
       "alertmanager-asterisk-bridge": "Infra",
       "andorra-integration": "Infra",
       "asterisk": "Infra",
+      "budget": "Data",
       "calving-detection": "Data",
       "chirpstack-integration": "Infra",
       "corni-api": "Corni",
@@ -507,6 +513,7 @@
     "platform_required": [
       "agents",
       "airflow",
+      "budget",
       "coverage-planner",
       "cowtrol",
       "cowtrol-api",
