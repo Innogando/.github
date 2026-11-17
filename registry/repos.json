@@ -177,6 +177,11 @@
       "area": "Infra",
       "platform": "required"
     },
+    "grazing-maps": {
+      "project": 9,
+      "area": "Data",
+      "platform": "required"
+    },
     "innobot": {
       "project": 9,
       "area": "Cross / Platform",
@@ -451,6 +456,7 @@
       "fonia-integration": "Infra",
       "github-workflows": "Cross / Platform",
       "grafana": "Infra",
+      "grazing-maps": "Data",
       "heats-detection": "Data",
       "innobot": "Cross / Platform",
       "innobrain": "Cross / Platform",
@@ -513,6 +519,7 @@
       "finance",
       "github-workflows",
       "grafana",
+      "grazing-maps",
       "innobot",
       "k8s-infra",
       "rumi-api",

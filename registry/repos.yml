@@ -116,6 +116,7 @@ repos:
   finance:                    { project: 9, area: Data, platform: required }
   github-workflows:           { project: 9, area: "Cross / Platform", platform: required }
   grafana:                    { project: 9, area: Infra, platform: required }
+  grazing-maps:               { project: 9, area: Data, platform: required }
   innobot:                    { project: 9, area: "Cross / Platform", platform: required }
   k8s-infra:                  { project: 9, area: Infra, platform: required }
   rumi-api:                   { project: 9, area: Rumi, platform: required }
