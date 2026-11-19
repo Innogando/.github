@@ -5,6 +5,9 @@
 # action if its logic changes. Not ported, because this check only runs on PRs
 # into main (the default branch): the non-default-base body parsing and the
 # agent-PR contract.
+# Synced with the action's warn-only Evidence step (contract: Innogando/.github#58);
+# the classifier (the action's evidence.py) is inlined below. Here it is on (`warn`):
+# this repo owns the PR template.
 name: Linked Issue
 
 on:
@@ -92,3 +95,79 @@ jobs:
           fi
           echo "::notice title=Linked Issue::$verdict — $reason"
           if [[ "$verdict" == fail && "$MODE" == block ]]; then exit 1; fi
+
+      # Warn-only, so `if: always()`: in block mode the step above may already have failed
+      # the job, and the author should still learn about the Evidence section in the same run.
+      # No `set -e`, and every path ends in `exit 0`: this step must never be what fails a PR.
+      - name: Check Evidence section
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          AUTHOR_LOGIN: ${{ github.event.pull_request.user.login }}
+          BOT_ALLOWLIST: "renovate[bot],dependabot[bot],innogando-brain-catalog[bot],innogando-hermes[bot]"
+        run: |
+          set -uo pipefail
+          MARK='<!-- innogando-pr-evidence -->'
+          if tr ', \t' '\n\n\n' <<<"$BOT_ALLOWLIST" | grep -qxF -- "$AUTHOR_LOGIN"; then
+            echo "::notice title=PR Evidence::skipped: $AUTHOR_LOGIN is on bot_allowlist"
+            exit 0
+          fi
+          if ! body=$(gh pr view "$PR" --repo "$REPO" --json body --jq '.body'); then
+            echo "::warning title=PR Evidence::could not read the PR body; Evidence was NOT checked."
+            exit 0
+          fi
+          # Inlined copy of github-workflows linked-issue/evidence.py; keep the two in sync.
+          classifier=$(mktemp)
+          cat >"$classifier" <<'PY'
+          import re
+          import sys
+
+          HEADER = re.compile(r"^## Evidence[ \t]*\r?$", re.M)
+          NEXT_SECTION = re.compile(r"^## ", re.M)
+          COMMENT = re.compile(r"<!--.*?-->", re.S)
+          FILLER = re.compile(r"^\s*(?:[-*](?:\s*\[[ xX]?\])?)?\s*(?:[^:\n]{1,40}:)?\s*$")
+          PLACEHOLDER = re.compile(r"^\s*(?:n/a|na|none|-|tbd)\s*$", re.I)
+
+
+          def classify(body):
+              m = HEADER.search(body or "")
+              if not m:
+                  return "missing"
+              rest = body[m.end():]
+              end = NEXT_SECTION.search(rest)
+              section = COMMENT.sub("", rest[: end.start()] if end else rest)
+              lines = [line for line in section.splitlines() if not FILLER.match(line)]
+              if not lines or (len(lines) == 1 and PLACEHOLDER.match(lines[0])):
+                  return "empty"
+              return "pass"
+
+
+          print(classify(sys.stdin.read()))
+          PY
+          result=$(python3 "$classifier" <<<"$body") || result=error
+          case "$result" in
+            missing) msg='**PR Evidence** · WARN — no `## Evidence` section. Add it from the org PR template: the test command and result, screenshots for UI, query timing on production-sized data, migration backward-compat. One sentence is enough for docs-only changes.' ;;
+            empty)   msg='**PR Evidence** · WARN — the `## Evidence` section is empty. Paste the test command and its result (and screenshots / query timing / migration note where they apply). If none applies, say why in one sentence.' ;;
+            pass)    msg='' ;;
+            *)       echo "::warning title=PR Evidence::checker failed; Evidence was NOT checked."; exit 0 ;;
+          esac
+          existing=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.body | startswith(\"$MARK\")) | .id" | head -1) || existing=""
+          if [[ -z "$msg" ]]; then
+            echo "::notice title=PR Evidence::pass"
+            [[ -n "$existing" ]] && { gh api -X DELETE "repos/$REPO/issues/comments/$existing" >/dev/null \
+              || echo "::warning title=PR Evidence::could not delete the earlier warning comment"; }
+            exit 0
+          fi
+          echo "::warning title=PR Evidence::${msg#\*\*PR Evidence\*\* · }"
+          comment="$MARK
+          $msg"
+          if [[ -n "$existing" ]]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$comment" >/dev/null
+          else
+            gh pr comment "$PR" --repo "$REPO" --body "$comment" >/dev/null
+          fi || echo "::warning title=PR Evidence::could not post the sticky comment"
+          exit 0
