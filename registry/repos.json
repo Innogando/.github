@@ -147,6 +147,11 @@
       "area": "Data",
       "platform": "required"
     },
+    "ayudas": {
+      "project": 9,
+      "area": "Data",
+      "platform": "required"
+    },
     "budget": {
       "project": 9,
       "area": "Data",
@@ -455,6 +460,7 @@
       "alertmanager-asterisk-bridge": "Infra",
       "andorra-integration": "Infra",
       "asterisk": "Infra",
+      "ayudas": "Data",
       "budget": "Data",
       "calving-detection": "Data",
       "chirpstack-integration": "Infra",
@@ -525,6 +531,7 @@
     "platform_required": [
       "agents",
       "airflow",
+      "ayudas",
       "budget",
       "coverage-planner",
       "cowtrol",
