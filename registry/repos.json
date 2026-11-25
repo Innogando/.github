@@ -267,6 +267,11 @@
       "area": "Corni",
       "platform": "exempt"
     },
+    "design-system": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
     "engineering-platform": {
       "project": 9,
       "area": "Cross / Platform",
@@ -468,6 +473,7 @@
       "coverage-planner": "Corni",
       "cowtrol": "CoWtrol",
       "cowtrol-api": "CoWtrol",
+      "design-system": "Cross / Platform",
       "engineering-platform": "Cross / Platform",
       "finance": "Data",
       "fonia-integration": "Infra",
