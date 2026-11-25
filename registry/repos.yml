@@ -136,6 +136,9 @@ repos:
   asterisk:                   { project: 9, area: Infra, platform: exempt }
   chirpstack-integration:     { project: 9, area: Infra, platform: exempt }
   corni-api:                  { project: 9, area: Corni, platform: exempt }
+  # created 2026-11-25: brand spec, design tokens and a Claude skill; no product code,
+  # so it does not carry the platform layer
+  design-system:              { project: 9, area: "Cross / Platform", platform: exempt }
   # is the platform; carries no pin of its own
   engineering-platform:       { project: 9, area: "Cross / Platform", platform: exempt }
   fonia-integration:          { project: 9, area: Infra, platform: exempt }
