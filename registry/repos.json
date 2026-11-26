@@ -303,11 +303,6 @@
       "area": "Cross / Platform",
       "platform": "exempt"
     },
-    "innoweb": {
-      "project": 9,
-      "area": "Cross / Platform",
-      "platform": "exempt"
-    },
     "management": {
       "project": 9,
       "area": null,
@@ -488,7 +483,6 @@
       "heats-detection": "Data",
       "innobot": "Cross / Platform",
       "innobrain": "Cross / Platform",
-      "innoweb": "Cross / Platform",
       "k8s-infra": "Infra",
       "mapa-pac": "Data",
       "mikrotik-programer": "Infra",
