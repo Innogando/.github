@@ -18,7 +18,10 @@
 # ruleset pins `Linked Issue` to. The job's own check run ("Governance") is red when any
 # check is red and is not meant to be required.
 #
-# Events: pull_request runs both checks; pull_request_review only Risk Path Review.
+# Events: pull_request runs both checks on every action (opened, edited, labeled, ...);
+# pull_request_review only Risk Path Review. Concurrency is keyed on event + PR + head SHA
+# and the latest run in a group must publish everything the cancelled one would have
+# (github-workflows#143).
 name: Governance
 
 on:
@@ -34,9 +37,11 @@ permissions:
   issues: read           # closingIssuesReferences needs it
   statuses: write        # one commit status per check
 
-# One group per event kind: a review run must never cancel a push run.
+# One group per event kind AND head SHA. Do not drop the SHA or the event name: an
+# `edited` run would cancel the push run, or a review run the pull_request run, and the
+# head would be left without some required statuses (github-workflows#143).
 concurrency:
-  group: governance-${{ github.event_name }}-${{ github.event.pull_request.number }}
+  group: governance-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -208,12 +213,12 @@ jobs:
           fi || echo "::warning title=PR Evidence::could not post the sticky comment"
           exit 0
 
-      # Only on the PR events that change its inputs: a new head, or a review.
+      # On EVERY pull_request action, not only on a new head: an `edited` or `labeled` run
+      # cancels the run for the same SHA (one concurrency group per SHA), so skipping it
+      # here would leave that SHA with no `Risk Path Review` at all (github-workflows#143).
       - name: Fetch risk-path-review
         id: risk_lib
-        if: >-
-          always() && (env.REVIEW_EVENT == 'true' || (env.PR_EVENT == 'true' &&
-          contains(fromJSON('["opened","synchronize","reopened","ready_for_review"]'), github.event.action)))
+        if: always() && (env.REVIEW_EVENT == 'true' || env.PR_EVENT == 'true')
         uses: actions/checkout@v4
         with:
           repository: Innogando/github-workflows
