@@ -1,36 +1,72 @@
-# Same contract as Innogando/github-workflows/linked-issue, but INLINED: this
-# repo is public (the org profile requires it) and GitHub does not let a public
-# repo consume actions from a private repo — the @main caller resolves everywhere
-# else in the fleet but "not found"s here. Keep this copy in sync with the
-# action if its logic changes. Not ported, because this check only runs on PRs
-# into main (the default branch): the non-default-base body parsing and the
-# agent-PR contract.
-# Synced with the action's warn-only Evidence step (contract: Innogando/.github#58);
-# the classifier (the action's evidence.py) is inlined below. Here it is on (`warn`):
-# this repo owns the PR template.
-name: Linked Issue
+# Governance — this repo's small PR checks as steps of ONE job, the same shape as the
+# fleet's reusable Innogando/github-workflows/.github/workflows/governance.yml.
+#
+# INLINED, not `uses:` — this repo is public (the org profile requires it) and GitHub
+# does not let a public repo consume workflows or actions from a private repo. Keep it
+# in sync with the shared workflow and actions if their logic changes.
+#
+# Each check publishes one COMMIT STATUS under the name the ruleset requires:
+#   Linked Issue       inlined copy of github-workflows/linked-issue (main-only subset:
+#                      the non-default-base body parsing and the agent-PR contract are
+#                      not ported, because PRs here only target main), plus the
+#                      warn-only Evidence step (contract: Innogando/.github#58; on here,
+#                      this repo owns the PR template).
+#   Risk Path Review   github-workflows/risk-path-review, checked out with a token (a
+#                      checkout of a private repo works where `uses:` does not) and
+#                      run from the workspace. Map: .github/risk-paths.yml.
+# A status posted with GITHUB_TOKEN comes from the GitHub Actions app, which is what the
+# ruleset pins `Linked Issue` to. The job's own check run ("Governance") is red when any
+# check is red and is not meant to be required.
+#
+# Events: pull_request runs both checks; pull_request_review only Risk Path Review.
+name: Governance
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review]
     branches: [main]
+  pull_request_review:            # only re-runs Risk Path Review
+    types: [submitted, dismissed]
 
 permissions:
-  pull-requests: write   # post / update the advisory comment
-  issues: read           # closingIssuesReferences needs it
   contents: read
+  pull-requests: write   # post / update the advisory comments
+  issues: read           # closingIssuesReferences needs it
+  statuses: write        # one commit status per check
 
+# One group per event kind: a review run must never cancel a push run.
 concurrency:
-  group: linked-issue-${{ github.event.pull_request.number }}
+  group: governance-${{ github.event_name }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  linked-issue:
-    name: Linked Issue
+  governance:
+    name: Governance
     runs-on: ubuntu-24.04
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: 10
+    # Fork PRs get no secrets; review events only matter for PRs into main.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.base.ref == 'main'
+    env:
+      PR_EVENT: ${{ github.event_name == 'pull_request' }}
+      REVIEW_EVENT: ${{ github.event_name == 'pull_request_review' }}
+      SHA: ${{ github.event.pull_request.head.sha }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - name: Resolve linked issue
+      # A required check reads "pending" rather than "expected" while the job runs.
+      - name: Mark checks pending
+        if: env.PR_EVENT == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state=pending -f context="Linked Issue" \
+            -f description="Running in the Governance job" -f target_url="$RUN_URL" > /dev/null
+
+      - name: Linked Issue
+        id: linked_issue
+        if: env.PR_EVENT == 'true'
+        continue-on-error: true
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -100,7 +136,7 @@ jobs:
       # the job, and the author should still learn about the Evidence section in the same run.
       # No `set -e`, and every path ends in `exit 0`: this step must never be what fails a PR.
       - name: Check Evidence section
-        if: always()
+        if: always() && env.PR_EVENT == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -171,3 +207,59 @@ jobs:
             gh pr comment "$PR" --repo "$REPO" --body "$comment" >/dev/null
           fi || echo "::warning title=PR Evidence::could not post the sticky comment"
           exit 0
+
+      # Only on the PR events that change its inputs: a new head, or a review.
+      - name: Fetch risk-path-review
+        id: risk_lib
+        if: >-
+          always() && (env.REVIEW_EVENT == 'true' || (env.PR_EVENT == 'true' &&
+          contains(fromJSON('["opened","synchronize","reopened","ready_for_review"]'), github.event.action)))
+        uses: actions/checkout@v4
+        with:
+          repository: Innogando/github-workflows
+          ref: main
+          token: ${{ secrets.GH_PROJECTS_PAT }}
+          path: .governance-lib
+          sparse-checkout: risk-path-review
+          persist-credentials: false
+
+      # Posts its own status (it re-evaluates when a review lands mid-run).
+      - name: Risk Path Review
+        id: risk_path_review
+        if: always() && steps.risk_lib.outcome == 'success'
+        continue-on-error: true
+        uses: ./.governance-lib/risk-path-review
+        with:
+          org_token: ${{ secrets.GH_PROJECTS_PAT }}   # read:org; GITHUB_TOKEN cannot read team membership
+
+      - name: Publish statuses
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LINKED_OUTCOME: ${{ steps.linked_issue.outcome }}
+          RISK_OUTCOME: ${{ steps.risk_path_review.outcome }}
+          RISK_LIB_OUTCOME: ${{ steps.risk_lib.outcome }}
+        run: |
+          set -uo pipefail
+          failed=0
+          case "$LINKED_OUTCOME" in
+            success)   state=success; desc="Passed in the Governance job" ;;
+            failure)   state=failure; desc="Failed: see the 'Linked Issue' step of the Governance job"; failed=1 ;;
+            cancelled) state=error;   desc="Cancelled"; failed=1 ;;
+            skipped|"") state="" ;;   # review event
+            *)         state=error;   desc="Unexpected outcome: $LINKED_OUTCOME"; failed=1 ;;
+          esac
+          if [[ -n "$state" ]]; then
+            gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$state" -f context="Linked Issue" \
+              -f description="$desc" -f target_url="$RUN_URL" > /dev/null \
+              || { echo "::error::Could not publish the 'Linked Issue' status"; failed=1; }
+            echo "Linked Issue: $state"
+          fi
+          [[ "$RISK_OUTCOME" == "failure" ]] && failed=1
+          if [[ "$RISK_LIB_OUTCOME" == "failure" ]]; then
+            echo "::error::Could not check out Innogando/github-workflows (is GH_PROJECTS_PAT set?)"
+            gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state=error -f context="Risk Path Review" \
+              -f description="Could not load the check (token?)" -f target_url="$RUN_URL" > /dev/null || true
+            failed=1
+          fi
+          exit $failed

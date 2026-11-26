@@ -1,0 +1,16 @@
+# Risk paths: who must approve a change, per area (replaces .github/CODEOWNERS).
+#
+# Read by the `Risk Path Review` status (Governance workflow) at the PR's BASE commit,
+# so a PR cannot loosen the rules it is judged by. An area is covered when the PR
+# author is a member of the area's team (org admins count as members of every team),
+# or when a member or org admin approved the current head. Contract and glob syntax:
+# Innogando/github-workflows, risk-path-review.
+
+areas:
+  # Public repository: everything here is visible to anyone and is reused by every
+  # repo in the organization (issue forms, PR template, shared workflows, the repo
+  # registry). The whole repo is high-risk, so the area is the whole tree; it also
+  # covers this file and the workflow that enforces it.
+  - team: risk-public
+    why: public repo reused by every repo in the organization
+    paths: ["**"]
