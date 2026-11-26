@@ -127,7 +127,7 @@
       {
         "label": "risk:low",
         "colour": "c2e0c6",
-        "description": "Tests, docs, copy or i18n; 100 lines or fewer; no sensitive paths"
+        "description": "Tests, docs, copy or i18n; 100 lines or fewer (docs only: 300); no sensitive paths"
       },
       {
         "label": "risk:medium",

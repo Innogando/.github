@@ -93,7 +93,7 @@ workflow_labels:
     - ["support",     "ededed", "A customer problem that needs engineering"]
     - ["triage",      "fbca04", "Not Ready yet: needs triage against the Definition of Ready"]
     - ["agent-ready", "0e8a16", "Meets the agent-ready bar. Set by a person, never by an agent"]
-    - ["risk:low",    "c2e0c6", "Tests, docs, copy or i18n; 100 lines or fewer; no sensitive paths"]
+    - ["risk:low",    "c2e0c6", "Tests, docs, copy or i18n; 100 lines or fewer (docs only: 300); no sensitive paths"]
     - ["risk:medium", "fef2c0", "Application logic; 300 lines or fewer; no sensitive paths"]
     - ["risk:high",   "f9d0c4", "Migrations, auth, billing, integrations, infra, or over 300 lines"]
 
