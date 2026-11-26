@@ -202,6 +202,11 @@
       "area": "Infra",
       "platform": "required"
     },
+    "n8n": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "required"
+    },
     "navidad": {
       "project": 9,
       "area": "Cross / Platform",
@@ -487,6 +492,7 @@
       "k8s-infra": "Infra",
       "mapa-pac": "Data",
       "mikrotik-programer": "Infra",
+      "n8n": "Infra",
       "navidad": "Cross / Platform",
       "pagosdeizcala-integration": "Rumi",
       "rumi-api": "Rumi",
@@ -548,6 +554,7 @@
       "grazing-maps",
       "innobot",
       "k8s-infra",
+      "n8n",
       "navidad",
       "rumi-api",
       "rumi-app",
