@@ -1,9 +1,0 @@
-# CODEOWNERS
-#
-# Owners are teams, never individuals: GitHub skips the code-owner review
-# when the PR author is a code owner of the path.
-
-# Public repository: everything here is visible to anyone and is reused by
-# every repo in the organization (issue forms, PR template, shared workflows,
-# the repo registry). The whole repo is high-risk, so ownership stays broad.
-* @Innogando/risk-public
