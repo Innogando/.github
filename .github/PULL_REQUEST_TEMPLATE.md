@@ -19,19 +19,24 @@ Closes <!-- full URL, e.g. https://github.com/Innogando/rumi-api/issues/574 -->
 
 <!-- No issue? Add the `no-issue` label AND write the reason here (chore / deps / release / hotfix). Hotfix → open an Incident issue within 24 h. -->
 
-## How tested
+## Evidence
 
-<!-- Evidence, not adjectives: test names, CI run link, `EXPLAIN` before/after, screenshot, a dev-environment URL. -->
+<!--
+What a reviewer checks instead of reading every line. Evidence, not adjectives. Keep this header: a check warns when it is empty.
+- Tests: the command you ran and its result (pass count, or the CI run link).
+- UI changed: before / after screenshots or a short recording.
+- Endpoint or query over production-sized data: timing or `EXPLAIN` on realistic volume (dev replica), before / after.
+- Migration: can the release running now still work against the new schema? (dropped or renamed columns, NOT NULL without default…)
+- Nothing above applies (docs, config): say why in one sentence.
+-->
 
 ## Risk & rollback
 
 <!-- What can break, who notices first, how we go back (revert PR / ArgoCD rollback / migration downgrade). -->
 
-## Screenshots / recordings
-
-<!-- UI changes only. Before / after. -->
-
 ## Checklist
+
+<!-- Size: over ~800 non-generated lines (lockfiles, generated code and snapshots excluded), split the PR or justify its size in one sentence under **What**. -->
 
 - [ ] Title is a Conventional Commit and describes the behaviour, not the person who asked for it
 - [ ] Acceptance criteria of the linked issue are all met, or the ones left out are listed under **What**

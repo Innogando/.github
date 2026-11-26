@@ -147,6 +147,11 @@
       "area": "Data",
       "platform": "required"
     },
+    "ayudas": {
+      "project": 9,
+      "area": "Data",
+      "platform": "required"
+    },
     "budget": {
       "project": 9,
       "area": "Data",
@@ -193,6 +198,11 @@
       "platform": "required"
     },
     "k8s-infra": {
+      "project": 9,
+      "area": "Infra",
+      "platform": "required"
+    },
+    "n8n": {
       "project": 9,
       "area": "Infra",
       "platform": "required"
@@ -262,6 +272,11 @@
       "area": "Corni",
       "platform": "exempt"
     },
+    "design-system": {
+      "project": 9,
+      "area": "Cross / Platform",
+      "platform": "exempt"
+    },
     "engineering-platform": {
       "project": 9,
       "area": "Cross / Platform",
@@ -284,11 +299,6 @@
       "platform": "exempt"
     },
     "innobrain": {
-      "project": 9,
-      "area": "Cross / Platform",
-      "platform": "exempt"
-    },
-    "innoweb": {
       "project": 9,
       "area": "Cross / Platform",
       "platform": "exempt"
@@ -455,6 +465,7 @@
       "alertmanager-asterisk-bridge": "Infra",
       "andorra-integration": "Infra",
       "asterisk": "Infra",
+      "ayudas": "Data",
       "budget": "Data",
       "calving-detection": "Data",
       "chirpstack-integration": "Infra",
@@ -462,6 +473,7 @@
       "coverage-planner": "Corni",
       "cowtrol": "CoWtrol",
       "cowtrol-api": "CoWtrol",
+      "design-system": "Cross / Platform",
       "engineering-platform": "Cross / Platform",
       "finance": "Data",
       "fonia-integration": "Infra",
@@ -471,10 +483,10 @@
       "heats-detection": "Data",
       "innobot": "Cross / Platform",
       "innobrain": "Cross / Platform",
-      "innoweb": "Cross / Platform",
       "k8s-infra": "Infra",
       "mapa-pac": "Data",
       "mikrotik-programer": "Infra",
+      "n8n": "Infra",
       "navidad": "Cross / Platform",
       "pagosdeizcala-integration": "Rumi",
       "rumi-api": "Rumi",
@@ -525,6 +537,7 @@
     "platform_required": [
       "agents",
       "airflow",
+      "ayudas",
       "budget",
       "coverage-planner",
       "cowtrol",
@@ -535,6 +548,7 @@
       "grazing-maps",
       "innobot",
       "k8s-infra",
+      "n8n",
       "navidad",
       "rumi-api",
       "rumi-app",

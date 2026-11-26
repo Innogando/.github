@@ -110,6 +110,7 @@ workflow_labels:
 repos:
   # --- #9 Granja de Rus (software) --------------------------------------------
   airflow:                    { project: 9, area: Data, platform: required }
+  ayudas:                     { project: 9, area: Data, platform: required }
   budget:                     { project: 9, area: Data, platform: required }
   coverage-planner:           { project: 9, area: Corni, platform: required }
   cowtrol:                    { project: 9, area: CoWtrol, platform: required }
@@ -120,6 +121,7 @@ repos:
   grazing-maps:               { project: 9, area: Data, platform: required }
   innobot:                    { project: 9, area: "Cross / Platform", platform: required }
   k8s-infra:                  { project: 9, area: Infra, platform: required }
+  n8n:                        { project: 9, area: Infra, platform: required }
   navidad:                    { project: 9, area: "Cross / Platform", platform: required }
   rumi-api:                   { project: 9, area: Rumi, platform: required }
   rumi-app:                   { project: 9, area: Rumi, platform: required }
@@ -135,6 +137,9 @@ repos:
   asterisk:                   { project: 9, area: Infra, platform: exempt }
   chirpstack-integration:     { project: 9, area: Infra, platform: exempt }
   corni-api:                  { project: 9, area: Corni, platform: exempt }
+  # created 2026-11-25: brand spec, design tokens and a Claude skill; no product code,
+  # so it does not carry the platform layer
+  design-system:              { project: 9, area: "Cross / Platform", platform: exempt }
   # is the platform; carries no pin of its own
   engineering-platform:       { project: 9, area: "Cross / Platform", platform: exempt }
   fonia-integration:          { project: 9, area: Infra, platform: exempt }
@@ -144,11 +149,6 @@ repos:
   # company knowledge meta-repo (ADR-0001 in the repo): knowledge and a generated
   # catalog, no product code, so it does not carry the platform layer
   innobrain:                  { project: 9, area: "Cross / Platform", platform: exempt }
-  # AGENTS.md only, no pin: declared required on 2026-09-03 so the drift check would
-  # surface it, then undeclared on 2026-09-07 -- adopting the conventions here is not
-  # planned, and a standing error nobody intends to fix trains people to ignore the
-  # report. Flip back to `required` the day someone means to adopt them.
-  innoweb:                    { project: 9, area: "Cross / Platform", platform: exempt }
   # cross-cutting planning repo: Area comes from the issue's area label
   management:                 { project: 9, area: null, platform: exempt, require_label: true }
   mapa-pac:                   { project: 9, area: Data, platform: exempt }
